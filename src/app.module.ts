@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
 import config from './common/configs/config';
 import { UsersModule } from './modules/users/users.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from '@algoan/nestjs-logging-interceptor';
 
 @Module({
   imports: [
@@ -25,6 +27,13 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AppResolver],
+  providers: [
+    AppService,
+    AppResolver,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
 export class AppModule {}

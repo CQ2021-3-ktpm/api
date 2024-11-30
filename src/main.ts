@@ -10,8 +10,12 @@ import type {
   SwaggerConfig,
 } from './common/configs/config.interface';
 
+declare const module: any;
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
 
   // Validation
   app.useGlobalPipes(new ValidationPipe());
@@ -43,6 +47,11 @@ async function bootstrap() {
   // Cors
   if (corsConfig.enabled) {
     app.enableCors();
+  }
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
   }
 
   await app.listen(process.env.PORT || nestConfig.port || 3000);
