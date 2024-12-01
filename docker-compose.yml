@@ -15,18 +15,6 @@ services:
       - type: tmpfs
         target: /var/lib/postgresql/data
 
-  nest-api:
-    container_name: nest-api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000' 
-    depends_on:
-      - postgres
-    env_file:
-      - .env
-
   localstack:
     image: localstack/localstack
     environment:
