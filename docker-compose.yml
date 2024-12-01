@@ -1,28 +1,58 @@
 version: '3.8'
+
 services:
+  postgres:
+    image: postgis/postgis:15-3.5-alpine
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - api_net
+    command: postgres -N 500
+    ports:
+      - 5432:5432
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+
   nest-api:
     container_name: nest-api
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - '3000:3000' 
     depends_on:
       - postgres
     env_file:
       - .env
 
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    restart: always
+  localstack:
+    image: localstack/localstack
+    environment:
+      SERVICES: "s3"
+      HOSTNAME: localstack
+    networks:
+      - api_net
     ports:
-      - '5432:5432'
-    env_file:
-      - .env
+      - 4566:4566
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - "./scripts/s3_bootstrap.sh:/etc/localstack/init/ready.d/s3_bootstrap.sh"
+
+  redis:
+    image: redis:7.4.1-alpine
+    restart: always
+    networks:
+      - api_net
+    ports:
+      - '6379:6379'
+    volumes:
+      - cache:/data
+
+networks:
+  api_net:
+    driver: bridge
 
 volumes:
-  postgres:
-    name: nest-db
+  cache:
+    driver: local
