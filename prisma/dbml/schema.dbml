@@ -3,31 +3,129 @@
 //// ------------------------------------------------------
 
 Table User {
-  id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  email String [unique, not null]
-  password String [not null]
-  firstname String
-  lastname String
-  posts Post [not null]
+  user_id String [pk]
   role Role [not null]
+  name String [not null]
+  email String [unique, not null]
+  phone_number String [unique, not null]
+  password_hash String [not null]
+  avatar_url String
+  birthdate DateTime
+  gender Gender [not null]
+  status Status [not null, default: 'ACTIVE']
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
 }
 
-Table Post {
-  id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  published Boolean [not null]
-  title String [not null]
-  content String
-  author User
-  authorId String
+Table Brand {
+  brand_id String [pk]
+  user_id String [not null]
+  industry String [not null]
+  address String [not null]
+  latitude Float [not null]
+  longitude Float [not null]
+  status Status [not null, default: 'ACTIVE']
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+}
+
+Table Game {
+  game_id String [pk]
+  name String [not null]
+  type String [not null]
+  instructions String [not null]
+  image_url String
+  item_exchange_enabled Boolean [not null, default: false]
+  status Status [not null, default: 'ACTIVE']
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+}
+
+Table Event {
+  event_id String [pk]
+  brand_id String [not null]
+  name String [not null]
+  image_url String
+  start_date DateTime [not null]
+  end_date DateTime [not null]
+  voucher_quantity Int [not null]
+  status Status [not null, default: 'ACTIVE']
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+}
+
+Table Campaign {
+  campaign_id String [pk]
+  brand_id String [not null]
+  event_id String [not null]
+  budget Float [not null]
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+}
+
+Table Voucher {
+  voucher_id String [pk]
+  campaign_id String [not null]
+  code String [unique, not null]
+  qr_code String
+  value Float [not null]
+  description String
+  expiration_date DateTime [not null]
+  status VoucherStatus [not null, default: 'UNUSED']
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+}
+
+Table Notification {
+  notification_id String [pk]
+  player_id String [not null]
+  message String [not null]
+  message_type MessageType [not null]
+  event_id String
+  status NotificationStatus [not null, default: 'UNREAD']
+  created_at DateTime [default: `now()`, not null]
+}
+
+Table Credit {
+  credit_id String [pk]
+  player_id String [not null]
+  credits Int [not null]
+  credits_used Int [not null, default: 0]
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
 }
 
 Enum Role {
   ADMIN
+  BRAND
   USER
 }
 
-Ref: Post.authorId > User.id
+Enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+Enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+Enum VoucherStatus {
+  UNUSED
+  USED
+  EXPIRED
+}
+
+Enum MessageType {
+  EVENT
+  REWARD
+  ERROR
+}
+
+Enum NotificationStatus {
+  SENT
+  READ
+  UNREAD
+}

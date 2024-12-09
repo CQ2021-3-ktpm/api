@@ -13,29 +13,129 @@ generator dbml {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  email     String   @unique
-  password  String
-  firstname String?
-  lastname  String?
-  posts     Post[]
-  role      Role
+  user_id      String   @id @default(cuid())
+  role         Role
+  name         String
+  email        String   @unique
+  phone_number String   @unique
+  password_hash String
+  avatar_url   String?
+  birthdate    DateTime?
+  gender       Gender
+  status       Status   @default(ACTIVE)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  published Boolean
-  title     String
-  content   String?
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?
+model Brand {
+  brand_id  String   @id @default(cuid())
+  user_id   String
+  industry  String
+  address   String
+  latitude  Float
+  longitude Float
+  status    Status   @default(ACTIVE)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Game {
+  game_id               String   @id @default(cuid())
+  name                  String
+  type                  String
+  instructions          String
+  image_url             String?
+  item_exchange_enabled Boolean  @default(false)
+  status                Status   @default(ACTIVE)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+}
+
+model Event {
+  event_id        String   @id @default(cuid())
+  brand_id        String
+  name            String
+  image_url       String?
+  start_date      DateTime
+  end_date        DateTime
+  voucher_quantity Int
+  status          Status   @default(ACTIVE)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model Campaign {
+  campaign_id String   @id @default(cuid())
+  brand_id    String
+  event_id    String
+  budget      Float
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model Voucher {
+  voucher_id     String   @id @default(cuid())
+  campaign_id    String
+  code           String   @unique
+  qr_code        String?
+  value          Float
+  description    String?
+  expiration_date DateTime
+  status         VoucherStatus @default(UNUSED)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model Notification {
+  notification_id String   @id @default(cuid())
+  player_id       String
+  message         String
+  message_type    MessageType
+  event_id        String?
+  status          NotificationStatus @default(UNREAD)
+  created_at      DateTime @default(now())
+}
+
+model Credit {
+  credit_id   String   @id @default(cuid())
+  player_id   String
+  credits     Int
+  credits_used Int     @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }
 
 enum Role {
   ADMIN
+  BRAND
   USER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum VoucherStatus {
+  UNUSED
+  USED
+  EXPIRED
+}
+
+enum MessageType {
+  EVENT
+  REWARD
+  ERROR
+}
+
+enum NotificationStatus {
+  SENT
+  READ
+  UNREAD
 }
