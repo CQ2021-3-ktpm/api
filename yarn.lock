@@ -6838,7 +6838,7 @@ neo-async@^2.6.2:
 
 nestjs-prisma@^0.23.0:
   version "0.23.0"
-  resolved "https://registry.npmjs.org/nestjs-prisma/-/nestjs-prisma-0.23.0.tgz"
+  resolved "https://registry.yarnpkg.com/nestjs-prisma/-/nestjs-prisma-0.23.0.tgz#432bbb6e616619f7b9e3d7106c205d49b85e5657"
   integrity sha512-0pIMDasayP+vMFSztcs85zu4WSPTKM85F8vIrqn7GsUBboEcKhI8eCeVghhNyKDGzEBaNAYNJlo2MAWdNuN7Tw==
   dependencies:
     "@angular-devkit/core" "^13.3.0"

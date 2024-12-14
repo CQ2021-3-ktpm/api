@@ -4,14 +4,14 @@
 
 Table User {
   user_id String [pk]
-  role Role [not null]
+  role Role [not null, default: 'USER']
   name String [not null]
   email String [unique, not null]
   phone_number String [unique, not null]
   password_hash String [not null]
   avatar_url String
   birthdate DateTime
-  gender Gender [not null]
+  gender Gender
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
