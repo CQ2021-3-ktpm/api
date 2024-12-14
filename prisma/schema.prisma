@@ -105,6 +105,16 @@ model Credit {
   updated_at  DateTime @updatedAt
 }
 
+model Invitation {
+  invitation_id String   @id @default(cuid())
+  email         String
+  user_id       String
+  status        InvitationStatus   @default(PENDING)
+  expiresAt     DateTime
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
 enum Role {
   ADMIN
   BRAND
@@ -138,4 +148,10 @@ enum NotificationStatus {
   SENT
   READ
   UNREAD
+}
+
+enum InvitationStatus {
+  ACCEPTED
+  REJECTED
+  PENDING
 }

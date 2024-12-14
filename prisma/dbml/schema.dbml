@@ -95,6 +95,16 @@ Table Credit {
   updated_at DateTime [not null]
 }
 
+Table Invitation {
+  invitation_id String [pk]
+  email String [not null]
+  user_id String [not null]
+  status InvitationStatus [not null, default: 'PENDING']
+  expiresAt DateTime [not null]
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+}
+
 Enum Role {
   ADMIN
   BRAND
@@ -128,4 +138,10 @@ Enum NotificationStatus {
   SENT
   READ
   UNREAD
+}
+
+Enum InvitationStatus {
+  ACCEPTED
+  REJECTED
+  PENDING
 }
