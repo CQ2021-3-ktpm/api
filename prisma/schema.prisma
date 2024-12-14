@@ -17,7 +17,7 @@ model User {
   role         Role
   name         String
   email        String   @unique
-  phone_number String   @unique
+  phone_number String   @unique @default(cuid()) 
   password_hash String
   avatar_url   String?
   birthdate    DateTime?

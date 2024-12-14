@@ -8,6 +8,8 @@ import config from './common/configs/config';
 import { UsersModule } from './modules/users/users.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from '@algoan/nestjs-logging-interceptor';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { LoggingInterceptor } from '@algoan/nestjs-logging-interceptor';
       },
     }),
     UsersModule,
+    JwtModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
