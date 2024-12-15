@@ -13,6 +13,7 @@ Table User {
   birthdate DateTime
   gender Gender
   status Status [not null, default: 'ACTIVE']
+  is_verified Boolean [not null, default: false]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
 }

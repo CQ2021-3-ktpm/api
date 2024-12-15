@@ -23,6 +23,7 @@ model User {
   birthdate     DateTime?
   gender        Gender?
   status        Status    @default(ACTIVE)
+  is_verified   Boolean   @default(false)
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 }

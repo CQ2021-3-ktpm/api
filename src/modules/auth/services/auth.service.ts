@@ -51,11 +51,36 @@ export class AuthService {
         },
       });
 
-      const link = `${process.env.NEXT_PUBLIC_API_URL}/auth/sign-in?id=${invitation.invitation_id}`;
+      const link = `${process.env.NEXT_PUBLIC_API_URL}/register?id=${invitation.invitation_id}`;
       await this.mailService.sendSignInEmail(newUser.email, link);
 
       return { ...newUser };
     });
+  }
+
+  async confirmEmail(invitationId: string) {
+    const invitation = await this.prisma.invitation.findUnique({
+      where: { invitation_id: invitationId },
+    });
+
+    if (!invitation) {
+      throw new BadRequestException('Invalid invitation');
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      throw new BadRequestException('Invitation expired');
+    }
+
+    await this.prisma.user.update({
+      where: { user_id: invitation.user_id },
+      data: { is_verified: true },
+    });
+
+    await this.prisma.invitation.delete({
+      where: { invitation_id: invitationId },
+    });
+
+    return { message: 'Email confirmed successfully' };
   }
 
   async login(createUserDto: CreateUserDto) {
