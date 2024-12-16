@@ -11,6 +11,7 @@ import { LoggingInterceptor } from '@algoan/nestjs-logging-interceptor';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailerConfig } from './common/configs/mailer.config';
+import { CampaignsModule } from './modules/campaigns/campaigns.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MailerConfig } from './common/configs/mailer.config';
     UsersModule,
     JwtModule,
     AuthModule,
+    CampaignsModule,
   ],
   controllers: [AppController],
   providers: [

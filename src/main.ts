@@ -24,7 +24,11 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new AuthGuard(jwtService, reflector));
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true, // transform payload to DTO instance
+    }),
+  );
 
   // enable shutdown hook
   app.enableShutdownHooks();
