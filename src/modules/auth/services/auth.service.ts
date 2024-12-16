@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { MailService } from './mail.service';
 import { PrismaService } from 'nestjs-prisma';
+import { User } from '@prisma/client';
+import { LoginDto } from '../dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -51,47 +53,55 @@ export class AuthService {
         },
       });
 
-      const link = `${process.env.NEXT_PUBLIC_API_URL}/register?id=${invitation.invitation_id}`;
+      const link = `${process.env.NEXT_PUBLIC_API_URL}/confirm-email?token=${invitation.invitation_id}`;
       await this.mailService.sendSignInEmail(newUser.email, link);
 
-      return { ...newUser };
+      return {
+        access_token: await this.jwtService.signAsync(newUser),
+        email: newUser.email,
+      };
     });
   }
 
-  async confirmEmail(invitationId: string) {
+  async verify(user: User, invitationId: string) {
     const invitation = await this.prisma.invitation.findUnique({
       where: { invitation_id: invitationId },
     });
 
-    if (!invitation) {
-      throw new BadRequestException('Invalid invitation');
+    if (!invitation || invitation.email !== user.email) {
+      throw new UnauthorizedException('Invalid invitation');
     }
 
     if (invitation.expiresAt < new Date()) {
-      throw new BadRequestException('Invitation expired');
+      throw new UnauthorizedException('Invitation expired');
     }
 
-    await this.prisma.user.update({
-      where: { user_id: invitation.user_id },
-      data: { is_verified: true },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { user_id: invitation.user_id },
+        data: { is_verified: true },
+      });
+
+      await tx.invitation.update({
+        where: { invitation_id: invitationId },
+        data: { status: 'ACCEPTED' },
+      });
     });
 
-    await this.prisma.invitation.delete({
-      where: { invitation_id: invitationId },
-    });
-
-    return { message: 'Email confirmed successfully' };
+    return {
+      message: 'User verified successfully',
+    };
   }
 
-  async login(createUserDto: CreateUserDto) {
-    const user = await this.usersService.findOne(createUserDto.email);
+  async login(loginDto: LoginDto) {
+    const user = await this.usersService.findOne(loginDto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const isPasswordValid = await bcrypt.compare(
-      createUserDto.password,
+      loginDto.password,
       user.password_hash,
     );
 
