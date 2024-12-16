@@ -52,26 +52,19 @@ model Game {
   updated_at            DateTime @updatedAt
 }
 
-model Event {
-  event_id         String   @id @default(cuid())
+model Campaign {
+  campaign_id      String   @id @default(cuid())
   brand_id         String
   name             String
   image_url        String?
   start_date       DateTime
   end_date         DateTime
+  description      String
   voucher_quantity Int
+  voucher_id       String
   status           Status   @default(ACTIVE)
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
-}
-
-model Campaign {
-  campaign_id String   @id @default(cuid())
-  brand_id    String
-  event_id    String
-  budget      Float
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
 }
 
 model Voucher {

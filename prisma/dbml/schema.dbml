@@ -42,24 +42,17 @@ Table Game {
   updated_at DateTime [not null]
 }
 
-Table Event {
-  event_id String [pk]
+Table Campaign {
+  campaign_id String [pk]
   brand_id String [not null]
   name String [not null]
   image_url String
   start_date DateTime [not null]
   end_date DateTime [not null]
+  description String [not null]
   voucher_quantity Int [not null]
+  voucher_id String [not null]
   status Status [not null, default: 'ACTIVE']
-  created_at DateTime [default: `now()`, not null]
-  updated_at DateTime [not null]
-}
-
-Table Campaign {
-  campaign_id String [pk]
-  brand_id String [not null]
-  event_id String [not null]
-  budget Float [not null]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
 }
