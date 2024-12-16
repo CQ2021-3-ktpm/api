@@ -2,8 +2,8 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { CreateAuthDto } from './../dto/create-auth.dto';
 import { UsersService } from '../../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -93,11 +93,17 @@ export class AuthService {
     };
   }
 
+  async checkVerification(user: User) {
+    return {
+      is_verified: user.is_verified,
+    };
+  }
+
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findOne(loginDto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new NotFoundException('Invalid email or password');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -106,7 +112,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new NotFoundException('Invalid email or password');
     }
 
     return {

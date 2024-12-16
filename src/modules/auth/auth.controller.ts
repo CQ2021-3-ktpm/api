@@ -55,12 +55,24 @@ export class AuthController {
   })
   @UseInterceptors(new TransformInterceptor('User verified successfully'))
   verify(@AuthUser() user: User, @Param('token') invitationId: string) {
-    console.log('user', user);
     return this.authService.verify(user, invitationId);
+  }
+
+  @Get('/check-verification')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check user verification' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User verified successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('User verified successfully'))
+  checkVerification(@AuthUser() user: User) {
+    return this.authService.checkVerification(user);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('/login')
+  @PublicRoute(true)
   @ApiOperation({ summary: 'Login a user' })
   @ApiResponse({
     status: HttpStatus.OK,
