@@ -3,3 +3,8 @@ export enum RoleType {
   ADMIN = 'ADMIN',
   BRAND = 'BRAND',
 }
+
+export enum Order {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
