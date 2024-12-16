@@ -1,6 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { AppModule } from './app.module';
@@ -9,6 +9,8 @@ import type {
   NestConfig,
   SwaggerConfig,
 } from './common/configs/config.interface';
+import { AuthGuard } from './modules/auth/guards/auth.guard';
+import { JwtService } from '@nestjs/jwt';
 
 declare const module: any;
 
@@ -18,6 +20,10 @@ async function bootstrap() {
   });
 
   // Validation
+  const jwtService = app.get(JwtService);
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new AuthGuard(jwtService, reflector));
+
   app.useGlobalPipes(new ValidationPipe());
 
   // enable shutdown hook

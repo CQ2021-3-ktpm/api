@@ -22,7 +22,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "nest start -w",
     "start:dev": "webpack --config webpack.config.js --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -71,6 +71,7 @@
     "graphql": "^16.9.0",
     "graphql-scalars": "1.22.2",
     "graphql-subscriptions": "2.0.0",
+    "nestjs-cls": "^4.5.0",
     "nestjs-prisma": "^0.23.0",
     "nodemailer": "^6.9.16",
     "passport": "^0.6.0",
