@@ -1,60 +1,12 @@
 import { handleError } from 'src/common/utils';
-import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { GetAllCampaignsResponseDto } from './dto/responses/get-all-campaigns.dto';
-import { SearchCampaignsDto } from './dto/requests/search-campaigns.dto';
+import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
 
 @Injectable()
 export class CampaignsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async getAll(getAllCampaignsDto: GetAllCampaignsDto) {
-    try {
-      const { skip, take } = getAllCampaignsDto;
-
-      const campaigns = await this.prisma.campaign.findMany({
-        where: {
-          status: 'ACTIVE',
-        },
-        include: {
-          brand: {
-            select: {
-              name: true,
-            },
-          },
-          vouchers: {
-            skip,
-            take,
-            select: {
-              value: true,
-            },
-          },
-        },
-      });
-
-      const filteredCampaigns: GetAllCampaignsResponseDto = {
-        campaigns: campaigns.flatMap((campaign) => {
-          const { brand, vouchers, ...rest } = campaign;
-          return vouchers.map((voucher) => ({
-            ...rest,
-            brand_name: brand.name,
-            value: voucher.value,
-          }));
-        }),
-      };
-
-      const pageMetaDto = new PageMetaDto({
-        itemCount: filteredCampaigns.campaigns.length,
-        pageOptionsDto: getAllCampaignsDto,
-      });
-
-      return { filteredCampaigns, pageMetaDto };
-    } catch (error) {
-      throw handleError(error);
-    }
-  }
 
   async getAllCategories() {
     try {
@@ -71,11 +23,13 @@ export class CampaignsService {
     }
   }
 
-  async search(searchCampaignsDto: SearchCampaignsDto) {
+  async getCampaigns(getAllCampaignsDto: GetAllCampaignsDto) {
     try {
-      const { skip, take, q } = searchCampaignsDto;
+      const { skip, take, q } = getAllCampaignsDto;
 
       const campaigns = await this.prisma.campaign.findMany({
+        skip,
+        take,
         where: {
           status: 'ACTIVE',
           OR: [
@@ -102,8 +56,6 @@ export class CampaignsService {
             },
           },
           vouchers: {
-            skip,
-            take,
             orderBy: { created_at: 'asc' },
             select: {
               value: true,
@@ -112,20 +64,20 @@ export class CampaignsService {
         },
       });
 
-      const filteredCampaigns: GetAllCampaignsResponseDto = {
+      const filteredCampaigns = {
         campaigns: campaigns.flatMap((campaign) => {
           const { brand, vouchers, ...rest } = campaign;
-          return vouchers.map((voucher) => ({
+          return {
             ...rest,
             brand_name: brand.name,
-            value: voucher.value,
-          }));
+            values: vouchers.map((voucher) => voucher.value),
+          };
         }),
       };
 
       const pageMetaDto = new PageMetaDto({
-        itemCount: filteredCampaigns.campaigns.length,
-        pageOptionsDto: searchCampaignsDto,
+        itemCount: campaigns.length,
+        pageOptionsDto: getAllCampaignsDto,
       });
 
       return { filteredCampaigns, pageMetaDto };

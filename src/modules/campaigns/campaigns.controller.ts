@@ -4,7 +4,6 @@ import { CampaignsService } from './campaigns.service';
 import { PublicRoute } from 'src/decorators';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
-import { SearchCampaignsDto } from './dto/requests/search-campaigns.dto';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -20,7 +19,7 @@ export class CampaignsController {
   })
   @UseInterceptors(new TransformInterceptor('Campaigns retrieved successfully'))
   getAll(@Query() getAllCampaignsDto: GetAllCampaignsDto) {
-    return this.campaignsService.getAll(getAllCampaignsDto);
+    return this.campaignsService.getCampaigns(getAllCampaignsDto);
   }
 
   @Get('/categories')
@@ -35,18 +34,6 @@ export class CampaignsController {
   )
   getAllCategories() {
     return this.campaignsService.getAllCategories();
-  }
-
-  @Get('/search')
-  @PublicRoute(true)
-  @ApiOperation({ summary: 'Search campaigns' })
-  @ApiResponse({
-    status: 200,
-    description: 'Return all campaigns',
-  })
-  @UseInterceptors(new TransformInterceptor('Campaigns retrieved successfully'))
-  search(@Query() searchCampaignsDto: SearchCampaignsDto) {
-    return this.campaignsService.search(searchCampaignsDto);
   }
 
   @Get('/:id')
