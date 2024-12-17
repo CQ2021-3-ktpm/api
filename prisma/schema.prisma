@@ -73,7 +73,7 @@ model Campaign {
   end_date         DateTime
   description      String
   voucher_quantity Int
-  voucher_id       String
+  category_id      String
   status           Status   @default(ACTIVE)
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
@@ -81,6 +81,17 @@ model Campaign {
   // Relationships
   brand    Brand     @relation(fields: [brand_id], references: [brand_id])
   vouchers Voucher[]
+  Category Category? @relation(fields: [category_id], references: [category_id])
+}
+
+model Category {
+  category_id String   @id @default(cuid())
+  name        String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relationships
+  campaigns Campaign[]
 }
 
 model Voucher {

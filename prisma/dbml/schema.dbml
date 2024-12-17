@@ -58,12 +58,21 @@ Table Campaign {
   end_date DateTime [not null]
   description String [not null]
   voucher_quantity Int [not null]
-  voucher_id String [not null]
+  category_id String [not null]
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
   brand Brand [not null]
   vouchers Voucher [not null]
+  Category Category
+}
+
+Table Category {
+  category_id String [pk]
+  name String [not null]
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+  campaigns Campaign [not null]
 }
 
 Table Voucher {
@@ -173,6 +182,8 @@ Enum InvitationStatus {
 Ref: Brand.user_id > User.user_id
 
 Ref: Campaign.brand_id > Brand.brand_id
+
+Ref: Campaign.category_id > Category.category_id
 
 Ref: Voucher.campaign_id > Campaign.campaign_id
 
