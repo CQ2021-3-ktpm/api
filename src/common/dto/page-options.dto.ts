@@ -7,9 +7,9 @@ import { Order } from '../constants';
 
 export class PageOptionsDto {
   @EnumFieldOptional(() => Order, {
-    default: Order.ASC,
+    default: Order.asc,
   })
-  readonly order: Order = Order.ASC;
+  readonly order: Order = Order.asc;
 
   @NumberFieldOptional({
     minimum: 1,
