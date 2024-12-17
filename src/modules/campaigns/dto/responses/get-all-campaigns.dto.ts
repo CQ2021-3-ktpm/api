@@ -1,45 +1,10 @@
-import { DateField, StringField, StringFieldOptional } from 'src/decorators';
+import { IsArray } from 'class-validator';
+import { GetOverviewCampaignDto } from './get-overview-campaign.dto';
 
 export class GetAllCampaignsResponseDto {
-  @StringField({
-    description: 'The id of the campaign',
-    example: '1',
+  @IsArray({
+    each: true,
+    message: 'Campaigns must be an array of GetOverviewCampaignDto',
   })
-  campaign_id!: string;
-
-  @StringField({
-    description: 'The id of the brand',
-    example: '1',
-  })
-  brand_id!: string;
-
-  @StringField({
-    description: 'The name of the campaign',
-    example: 'Christmas campaign',
-  })
-  name!: string;
-
-  @StringFieldOptional({
-    description: 'The image url of the campaign',
-    example: 'https://example.com/image.jpg',
-  })
-  image_url?: string;
-
-  @DateField({
-    description: 'The start date of the campaign',
-    example: '2024-12-10',
-  })
-  start_date!: Date;
-
-  @StringField({
-    description: 'The name of the brand',
-    example: 'Pepsi',
-  })
-  brand_name!: string;
-
-  @DateField({
-    description: 'The value of the campaign',
-    example: '20',
-  })
-  value!: number;
+  campaigns!: GetOverviewCampaignDto[];
 }
