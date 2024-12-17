@@ -52,7 +52,6 @@ export class UsersController {
     @AuthUser() user: User,
     @Query() pageOptionsDto: PageOptionsDto,
   ) {
-    console.log('user', user);
     return this.usersService.getUserVouchers(user.user_id, pageOptionsDto);
   }
 }

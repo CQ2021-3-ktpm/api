@@ -48,8 +48,6 @@ export class UsersService {
       },
     });
 
-    console.log(results);
-
     return results;
   }
 }
