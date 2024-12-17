@@ -1,4 +1,9 @@
-import { DateField, StringField, StringFieldOptional } from 'src/decorators';
+import {
+  DateField,
+  NumberField,
+  StringField,
+  StringFieldOptional,
+} from 'src/decorators';
 
 export class GetOverviewCampaignDto {
   @StringField({
@@ -37,7 +42,7 @@ export class GetOverviewCampaignDto {
   })
   brand_name!: string;
 
-  @DateField({
+  @NumberField({
     description: 'The value of the campaign',
     example: '20',
   })

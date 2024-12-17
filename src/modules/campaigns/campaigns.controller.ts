@@ -1,11 +1,10 @@
-import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CampaignsService } from './campaigns.service';
 import { PublicRoute } from 'src/decorators';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
 import { SearchCampaignsDto } from './dto/requests/search-campaigns.dto';
-import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -58,7 +57,7 @@ export class CampaignsController {
     description: 'Return campaign by id',
   })
   @UseInterceptors(new TransformInterceptor('Campaign retrieved successfully'))
-  getById(@Query('id') id: string) {
+  getById(@Param('id') id: string) {
     return this.campaignsService.getCampaignById(id);
   }
 }

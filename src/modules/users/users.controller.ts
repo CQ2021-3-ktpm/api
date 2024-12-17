@@ -1,14 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Param,
-  UseInterceptors,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, UseInterceptors, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,10 +7,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
-import { AuthUser, PublicRoute } from 'src/decorators';
+import { AuthUser } from 'src/decorators';
 import { User } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
-import { Public } from '@prisma/client/runtime/library';
 
 @ApiTags('Users')
 @Controller('/api/v1/users')

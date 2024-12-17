@@ -104,6 +104,7 @@ export class CampaignsService {
           vouchers: {
             skip,
             take,
+            orderBy: { created_at: 'asc' },
             select: {
               value: true,
             },
