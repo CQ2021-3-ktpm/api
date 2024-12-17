@@ -56,7 +56,9 @@ export class CampaignsService {
             },
           },
           vouchers: {
-            orderBy: { created_at: 'asc' },
+            orderBy: {
+              value: 'asc',
+            },
             select: {
               value: true,
             },

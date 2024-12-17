@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 
 @Injectable()
@@ -31,7 +29,7 @@ export class UsersService {
     return result;
   }
 
-  getUserVouchers(userId: string, pageOptionsDto: PageOptionsDto) {
+  async getUserVouchers(userId: string, pageOptionsDto: PageOptionsDto) {
     const { skip, take, order } = pageOptionsDto;
 
     const results = this.prisma.userVoucher.findMany({
@@ -44,7 +42,23 @@ export class UsersService {
         assigned_at: order,
       },
       include: {
-        voucher: true,
+        voucher: {
+          select: {
+            value: true,
+            description: true,
+            expiration_date: true,
+            campaign: {
+              select: {
+                brand: {
+                  select: {
+                    name: true,
+                    address: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
