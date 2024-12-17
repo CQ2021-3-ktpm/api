@@ -3,7 +3,6 @@ import {
   EmailField,
   PasswordField,
   StringField,
-  StringFieldOptional,
 } from '../../../decorators/field.decorators';
 
 export class CreateUserDto {
