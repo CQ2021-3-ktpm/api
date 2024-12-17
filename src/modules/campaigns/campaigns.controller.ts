@@ -5,9 +5,10 @@ import { PublicRoute } from 'src/decorators';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
 import { SearchCampaignsDto } from './dto/requests/search-campaigns.dto';
+import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 
 @ApiTags('Campaigns')
-@Controller('/api/campaigns')
+@Controller('/api/v1/campaigns')
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
