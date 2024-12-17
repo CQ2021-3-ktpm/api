@@ -36,6 +36,7 @@ model User {
 model Brand {
   brand_id   String   @id @default(cuid())
   user_id    String
+  name       String
   industry   String
   address    String
   latitude   Float
@@ -65,18 +66,17 @@ model Game {
 }
 
 model Campaign {
-  campaign_id      String   @id @default(cuid())
-  brand_id         String
-  name             String
-  image_url        String?
-  start_date       DateTime
-  end_date         DateTime
-  description      String
-  voucher_quantity Int
-  category_id      String
-  status           Status   @default(ACTIVE)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  campaign_id String   @id @default(cuid())
+  brand_id    String
+  name        String
+  image_url   String?
+  start_date  DateTime
+  end_date    DateTime
+  description String
+  category_id String
+  status      Status   @default(ACTIVE)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   // Relationships
   brand    Brand     @relation(fields: [brand_id], references: [brand_id])
@@ -95,16 +95,14 @@ model Category {
 }
 
 model Voucher {
-  voucher_id      String        @id @default(cuid())
+  voucher_id      String   @id @default(cuid())
   campaign_id     String
-  code            String        @unique
-  qr_code         String?
   value           Float
+  quantity        Int
   description     String?
   expiration_date DateTime
-  status          VoucherStatus @default(UNUSED)
-  created_at      DateTime      @default(now())
-  updated_at      DateTime      @updatedAt
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relationships
   campaign    Campaign      @relation(fields: [campaign_id], references: [campaign_id])
@@ -116,6 +114,8 @@ model UserVoucher {
   user_id         String
   voucher_id      String
   quantity        Int           @default(1)
+  code            String        @unique
+  qr_code         String?       @unique
   assigned_at     DateTime      @default(now())
   used_at         DateTime?
   status          VoucherStatus @default(UNUSED)

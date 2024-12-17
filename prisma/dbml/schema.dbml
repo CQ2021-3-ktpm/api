@@ -25,6 +25,7 @@ Table User {
 Table Brand {
   brand_id String [pk]
   user_id String [not null]
+  name String [not null]
   industry String [not null]
   address String [not null]
   latitude Float [not null]
@@ -57,7 +58,6 @@ Table Campaign {
   start_date DateTime [not null]
   end_date DateTime [not null]
   description String [not null]
-  voucher_quantity Int [not null]
   category_id String [not null]
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
@@ -78,12 +78,10 @@ Table Category {
 Table Voucher {
   voucher_id String [pk]
   campaign_id String [not null]
-  code String [unique, not null]
-  qr_code String
   value Float [not null]
+  quantity Int [not null]
   description String
   expiration_date DateTime [not null]
-  status VoucherStatus [not null, default: 'UNUSED']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
   campaign Campaign [not null]
@@ -95,6 +93,8 @@ Table UserVoucher {
   user_id String [not null]
   voucher_id String [not null]
   quantity Int [not null, default: 1]
+  code String [unique, not null]
+  qr_code String [unique]
   assigned_at DateTime [default: `now()`, not null]
   used_at DateTime
   status VoucherStatus [not null, default: 'UNUSED']
