@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CampaignsService } from './campaigns.service';
 import { PublicRoute } from 'src/decorators';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
-import { GetAllCampaignsDto } from './dto/getAllCampaigns.dto';
+import { GetAllCampaignsDto } from './dto/get-all-campaigns.dto';
 
 @ApiTags('Campaigns')
 @Controller('/api/campaigns')

@@ -1,18 +1,12 @@
 import { handleError } from 'src/common/utils';
-import { GetAllCampaignsDto } from './dto/getAllCampaigns.dto';
+import { GetAllCampaignsDto } from './dto/get-all-campaigns.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class CampaignsService {
-  constructor(private readonly prisma: PrismaService) {
-    if (!this.prisma.user) {
-      throw new Error(
-        'PrismaService is not properly initialized or campaign model does not exist.',
-      );
-    }
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getAll(getAllCampaignsDto: GetAllCampaignsDto) {
     try {
