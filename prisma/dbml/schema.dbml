@@ -19,6 +19,7 @@ Table User {
   brands Brand [not null]
   invitations Invitation [not null]
   Credit Credit [not null]
+  UserVoucher UserVoucher [not null]
 }
 
 Table Brand {
@@ -77,6 +78,23 @@ Table Voucher {
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
   campaign Campaign [not null]
+  UserVoucher UserVoucher [not null]
+}
+
+Table UserVoucher {
+  user_voucher_id String [pk]
+  user_id String [not null]
+  voucher_id String [not null]
+  quantity Int [not null, default: 1]
+  assigned_at DateTime [default: `now()`, not null]
+  used_at DateTime
+  status VoucherStatus [not null, default: 'UNUSED']
+  user User [not null]
+  voucher Voucher [not null]
+
+  indexes {
+    (user_id, voucher_id, assigned_at) [unique]
+  }
 }
 
 Table Notification {
@@ -157,6 +175,10 @@ Ref: Brand.user_id > User.user_id
 Ref: Campaign.brand_id > Brand.brand_id
 
 Ref: Voucher.campaign_id > Campaign.campaign_id
+
+Ref: UserVoucher.user_id > User.user_id
+
+Ref: UserVoucher.voucher_id > Voucher.voucher_id
 
 Ref: Notification.player_id > Game.game_id
 

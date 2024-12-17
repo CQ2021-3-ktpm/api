@@ -27,9 +27,10 @@ model User {
   updated_at    DateTime  @updatedAt
 
   // Relationships
-  brands      Brand[]      @relation("UserBrands")
-  invitations Invitation[] @relation("UserInvitations")
+  brands      Brand[]       @relation("UserBrands")
+  invitations Invitation[]  @relation("UserInvitations")
   Credit      Credit[]
+  UserVoucher UserVoucher[]
 }
 
 model Brand {
@@ -95,7 +96,24 @@ model Voucher {
   updated_at      DateTime      @updatedAt
 
   // Relationships
-  campaign Campaign @relation(fields: [campaign_id], references: [campaign_id])
+  campaign    Campaign      @relation(fields: [campaign_id], references: [campaign_id])
+  UserVoucher UserVoucher[]
+}
+
+model UserVoucher {
+  user_voucher_id String        @id @default(cuid())
+  user_id         String
+  voucher_id      String
+  quantity        Int           @default(1)
+  assigned_at     DateTime      @default(now())
+  used_at         DateTime?
+  status          VoucherStatus @default(UNUSED)
+
+  // Relationships
+  user    User    @relation(fields: [user_id], references: [user_id])
+  voucher Voucher @relation(fields: [voucher_id], references: [voucher_id])
+
+  @@unique([user_id, voucher_id, assigned_at])
 }
 
 model Notification {
