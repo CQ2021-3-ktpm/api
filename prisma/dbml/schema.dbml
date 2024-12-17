@@ -16,6 +16,9 @@ Table User {
   is_verified Boolean [not null, default: false]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  brands Brand [not null]
+  invitations Invitation [not null]
+  Credit Credit [not null]
 }
 
 Table Brand {
@@ -28,6 +31,8 @@ Table Brand {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  user User [not null]
+  campaigns Campaign [not null]
 }
 
 Table Game {
@@ -40,6 +45,7 @@ Table Game {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  notifications Notification [not null]
 }
 
 Table Campaign {
@@ -55,6 +61,8 @@ Table Campaign {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  brand Brand [not null]
+  vouchers Voucher [not null]
 }
 
 Table Voucher {
@@ -68,6 +76,7 @@ Table Voucher {
   status VoucherStatus [not null, default: 'UNUSED']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  campaign Campaign [not null]
 }
 
 Table Notification {
@@ -78,6 +87,7 @@ Table Notification {
   event_id String
   status NotificationStatus [not null, default: 'UNREAD']
   created_at DateTime [default: `now()`, not null]
+  game Game [not null]
 }
 
 Table Credit {
@@ -87,6 +97,7 @@ Table Credit {
   credits_used Int [not null, default: 0]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  user User [not null]
 }
 
 Table Invitation {
@@ -97,6 +108,7 @@ Table Invitation {
   expiresAt DateTime [not null]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  user User [not null]
 }
 
 Enum Role {
@@ -139,3 +151,15 @@ Enum InvitationStatus {
   REJECTED
   PENDING
 }
+
+Ref: Brand.user_id > User.user_id
+
+Ref: Campaign.brand_id > Brand.brand_id
+
+Ref: Voucher.campaign_id > Campaign.campaign_id
+
+Ref: Notification.player_id > Game.game_id
+
+Ref: Credit.player_id > User.user_id
+
+Ref: Invitation.user_id > User.user_id
