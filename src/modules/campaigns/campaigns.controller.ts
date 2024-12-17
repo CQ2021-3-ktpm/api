@@ -21,4 +21,18 @@ export class CampaignsController {
   getAll(@Query() getAllCampaignsDto: GetAllCampaignsDto) {
     return this.campaignsService.getAll(getAllCampaignsDto);
   }
+
+  @Get('/categories')
+  @PublicRoute(true)
+  @ApiOperation({ summary: 'Get all campaign categories' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all campaign categories',
+  })
+  @UseInterceptors(
+    new TransformInterceptor('Campaign categories retrieved successfully'),
+  )
+  getAllCategories() {
+    return this.campaignsService.getAllCategories();
+  }
 }

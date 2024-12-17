@@ -33,4 +33,19 @@ export class CampaignsService {
       throw handleError(error);
     }
   }
+
+  async getAllCategories() {
+    try {
+      const categories = await this.prisma.category.findMany();
+
+      const filteredCategories = categories.map((category) => {
+        const { created_at, updated_at, ...rest } = category;
+        return rest;
+      });
+
+      return filteredCategories;
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
 }
