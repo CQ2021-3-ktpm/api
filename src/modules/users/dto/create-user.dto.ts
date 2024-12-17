@@ -27,10 +27,4 @@ export class CreateUserDto {
     example: 'tandeptrai123',
   })
   password: string;
-
-  @StringFieldOptional({
-    description: 'The phone number of the user',
-    example: '0123456789',
-  })
-  phone_number?: string;
 }

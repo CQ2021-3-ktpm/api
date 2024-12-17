@@ -23,7 +23,7 @@ export class AuthService {
   ) {}
 
   async register(createAuthDto: CreateAuthDto) {
-    const { email, password, name, phone_number } = createAuthDto;
+    const { email, password, name } = createAuthDto;
 
     return this.prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findUnique({
@@ -41,7 +41,6 @@ export class AuthService {
           email,
           password_hash: hashedPassword,
           name,
-          phone_number,
         },
       });
 
@@ -103,7 +102,7 @@ export class AuthService {
     const user = await this.usersService.findOne(loginDto.email);
 
     if (!user) {
-      throw new NotFoundException('Invalid email or password');
+      throw new NotFoundException('Invalid email');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -112,7 +111,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new NotFoundException('Invalid email or password');
+      throw new NotFoundException('Invalid password');
     }
 
     return {

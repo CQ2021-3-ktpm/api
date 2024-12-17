@@ -31,35 +31,6 @@ export class UsersService {
     return result;
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const { email } = createUserDto;
-
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: email },
-    });
-
-    if (existingUser) {
-      throw new Error('Email already in use');
-    }
-
-    const randomPhoneNumber = uuidv4()
-      .replace(/[^0-9]/g, '')
-      .slice(0, 10);
-
-    const newUser = await this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        password_hash: createUserDto.password,
-        role: 'USER',
-        name: createUserDto.name || 'Anonymous',
-        phone_number: randomPhoneNumber,
-        gender: 'OTHER',
-      },
-    });
-
-    return newUser;
-  }
-
   getUserVouchers(userId: string, pageOptionsDto: PageOptionsDto) {
     const { skip, take, order } = pageOptionsDto;
 
