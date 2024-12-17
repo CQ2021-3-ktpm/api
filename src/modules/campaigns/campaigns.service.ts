@@ -1,8 +1,9 @@
 import { handleError } from 'src/common/utils';
-import { GetAllCampaignsDto } from './dto/get-all-campaigns.dto';
+import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { Injectable } from '@nestjs/common';
+import { GetAllCampaignsResponseDto } from './dto/responses/get-all-campaigns.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -12,23 +13,52 @@ export class CampaignsService {
     try {
       const { skip, take } = getAllCampaignsDto;
 
-      console.log('skip', skip);
-      console.log('take', take);
-
       const campaigns = await this.prisma.campaign.findMany({
-        skip,
-        take,
         where: {
           status: 'ACTIVE',
         },
+        include: {
+          brand: {
+            select: {
+              name: true,
+            },
+          },
+          vouchers: {
+            skip,
+            take,
+            select: {
+              value: true,
+            },
+          },
+        },
       });
+
+      const filteredCampaigns: GetAllCampaignsResponseDto[] = campaigns.flatMap(
+        (campaign) => {
+          const {
+            brand,
+            vouchers,
+            status,
+            end_date,
+            created_at,
+            updated_at,
+            description,
+            ...rest
+          } = campaign;
+          return vouchers.map((voucher) => ({
+            ...rest,
+            brand_name: brand.name,
+            value: voucher.value,
+          }));
+        },
+      );
 
       const pageMetaDto = new PageMetaDto({
         itemCount: campaigns.length,
         pageOptionsDto: getAllCampaignsDto,
       });
 
-      return { campaigns, pageMetaDto };
+      return { filteredCampaigns, pageMetaDto };
     } catch (error) {
       throw handleError(error);
     }
