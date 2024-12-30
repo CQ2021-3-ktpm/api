@@ -16,11 +16,16 @@ Table User {
   is_verified Boolean [not null, default: false]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  brands Brand [not null]
+  invitations Invitation [not null]
+  Credit Credit [not null]
+  UserVoucher UserVoucher [not null]
 }
 
 Table Brand {
   brand_id String [pk]
   user_id String [not null]
+  name String [not null]
   industry String [not null]
   address String [not null]
   latitude Float [not null]
@@ -28,6 +33,8 @@ Table Brand {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  user User [not null]
+  campaigns Campaign [not null]
 }
 
 Table Game {
@@ -40,41 +47,63 @@ Table Game {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
-}
-
-Table Event {
-  event_id String [pk]
-  brand_id String [not null]
-  name String [not null]
-  image_url String
-  start_date DateTime [not null]
-  end_date DateTime [not null]
-  voucher_quantity Int [not null]
-  status Status [not null, default: 'ACTIVE']
-  created_at DateTime [default: `now()`, not null]
-  updated_at DateTime [not null]
+  notifications Notification [not null]
 }
 
 Table Campaign {
   campaign_id String [pk]
   brand_id String [not null]
-  event_id String [not null]
-  budget Float [not null]
+  name String [not null]
+  image_url String
+  start_date DateTime [not null]
+  end_date DateTime [not null]
+  description String [not null]
+  category_id String [not null]
+  status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  brand Brand [not null]
+  vouchers Voucher [not null]
+  Category Category
+}
+
+Table Category {
+  category_id String [pk]
+  name String [not null]
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+  campaigns Campaign [not null]
 }
 
 Table Voucher {
   voucher_id String [pk]
   campaign_id String [not null]
-  code String [unique, not null]
-  qr_code String
   value Float [not null]
+  quantity Int [not null]
   description String
   expiration_date DateTime [not null]
-  status VoucherStatus [not null, default: 'UNUSED']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  campaign Campaign [not null]
+  UserVoucher UserVoucher [not null]
+}
+
+Table UserVoucher {
+  user_voucher_id String [pk]
+  user_id String [not null]
+  voucher_id String [not null]
+  quantity Int [not null, default: 1]
+  code String [unique, not null]
+  qr_code String [unique]
+  assigned_at DateTime [default: `now()`, not null]
+  used_at DateTime
+  status VoucherStatus [not null, default: 'UNUSED']
+  user User [not null]
+  voucher Voucher [not null]
+
+  indexes {
+    (user_id, voucher_id, assigned_at) [unique]
+  }
 }
 
 Table Notification {
@@ -85,6 +114,7 @@ Table Notification {
   event_id String
   status NotificationStatus [not null, default: 'UNREAD']
   created_at DateTime [default: `now()`, not null]
+  game Game [not null]
 }
 
 Table Credit {
@@ -94,6 +124,18 @@ Table Credit {
   credits_used Int [not null, default: 0]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
+  user User [not null]
+}
+
+Table Invitation {
+  invitation_id String [pk]
+  email String [not null]
+  user_id String [not null]
+  status InvitationStatus [not null, default: 'PENDING']
+  expiresAt DateTime [not null]
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+  user User [not null]
 }
 
 Table Invitation {
@@ -146,3 +188,21 @@ Enum InvitationStatus {
   REJECTED
   PENDING
 }
+
+Ref: Brand.user_id > User.user_id
+
+Ref: Campaign.brand_id > Brand.brand_id
+
+Ref: Campaign.category_id > Category.category_id
+
+Ref: Voucher.campaign_id > Campaign.campaign_id
+
+Ref: UserVoucher.user_id > User.user_id
+
+Ref: UserVoucher.voucher_id > Voucher.voucher_id
+
+Ref: Notification.player_id > Game.game_id
+
+Ref: Credit.player_id > User.user_id
+
+Ref: Invitation.user_id > User.user_id

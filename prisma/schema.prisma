@@ -5,7 +5,6 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  // previewFeatures = []
 }
 
 generator dbml {
@@ -26,11 +25,18 @@ model User {
   is_verified   Boolean   @default(false)
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
+
+  // Relationships
+  brands      Brand[]       @relation("UserBrands")
+  invitations Invitation[]  @relation("UserInvitations")
+  Credit      Credit[]
+  UserVoucher UserVoucher[]
 }
 
 model Brand {
   brand_id   String   @id @default(cuid())
   user_id    String
+  name       String
   industry   String
   address    String
   latitude   Float
@@ -38,6 +44,10 @@ model Brand {
   status     Status   @default(ACTIVE)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  // Relationships
+  user      User       @relation("UserBrands", fields: [user_id], references: [user_id])
+  campaigns Campaign[]
 }
 
 model Game {
@@ -50,41 +60,71 @@ model Game {
   status                Status   @default(ACTIVE)
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
-}
 
-model Event {
-  event_id         String   @id @default(cuid())
-  brand_id         String
-  name             String
-  image_url        String?
-  start_date       DateTime
-  end_date         DateTime
-  voucher_quantity Int
-  status           Status   @default(ACTIVE)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  // Relationships
+  notifications Notification[]
 }
 
 model Campaign {
   campaign_id String   @id @default(cuid())
   brand_id    String
-  event_id    String
-  budget      Float
+  name        String
+  image_url   String?
+  start_date  DateTime
+  end_date    DateTime
+  description String
+  category_id String
+  status      Status   @default(ACTIVE)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  // Relationships
+  brand    Brand     @relation(fields: [brand_id], references: [brand_id])
+  vouchers Voucher[]
+  Category Category? @relation(fields: [category_id], references: [category_id])
+}
+
+model Category {
+  category_id String   @id @default(cuid())
+  name        String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relationships
+  campaigns Campaign[]
 }
 
 model Voucher {
-  voucher_id      String        @id @default(cuid())
+  voucher_id      String   @id @default(cuid())
   campaign_id     String
-  code            String        @unique
-  qr_code         String?
   value           Float
+  quantity        Int
   description     String?
   expiration_date DateTime
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relationships
+  campaign    Campaign      @relation(fields: [campaign_id], references: [campaign_id])
+  UserVoucher UserVoucher[]
+}
+
+model UserVoucher {
+  user_voucher_id String        @id @default(cuid())
+  user_id         String
+  voucher_id      String
+  quantity        Int           @default(1)
+  code            String        @unique
+  qr_code         String?       @unique
+  assigned_at     DateTime      @default(now())
+  used_at         DateTime?
   status          VoucherStatus @default(UNUSED)
-  created_at      DateTime      @default(now())
-  updated_at      DateTime      @updatedAt
+
+  // Relationships
+  user    User    @relation(fields: [user_id], references: [user_id])
+  voucher Voucher @relation(fields: [voucher_id], references: [voucher_id])
+
+  @@unique([user_id, voucher_id, assigned_at])
 }
 
 model Notification {
@@ -95,6 +135,9 @@ model Notification {
   event_id        String?
   status          NotificationStatus @default(UNREAD)
   created_at      DateTime           @default(now())
+
+  // Relationships
+  game Game @relation(fields: [player_id], references: [game_id])
 }
 
 model Credit {
@@ -104,6 +147,9 @@ model Credit {
   credits_used Int      @default(0)
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
+
+  // Relationships
+  user User @relation(fields: [player_id], references: [user_id])
 }
 
 model Invitation {
@@ -114,6 +160,9 @@ model Invitation {
   expiresAt     DateTime
   created_at    DateTime         @default(now())
   updated_at    DateTime         @updatedAt
+
+  // Relationships
+  user User @relation("UserInvitations", fields: [user_id], references: [user_id])
 }
 
 enum Role {
