@@ -25,7 +25,7 @@ export class UsersController {
   })
   @UseInterceptors(new TransformInterceptor('Users retrieved successfully'))
   async getUsers(@AuthUser() user: User) {
-    return this.usersService.getUsers(user);
+    return this.usersService.getUserById(user.user_id);
   }
 
   @Get('/vouchers')
