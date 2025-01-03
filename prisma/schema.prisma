@@ -52,6 +52,8 @@ model Brand {
 
 model Game {
   game_id               String   @id @default(cuid())
+  brand_id              String
+  campaign_id           String
   name                  String
   type                  String
   instructions          String
@@ -63,6 +65,8 @@ model Game {
 
   // Relationships
   notifications Notification[]
+
+  @@unique([brand_id, campaign_id])
 }
 
 model Campaign {
@@ -74,6 +78,7 @@ model Campaign {
   end_date    DateTime
   description String
   category_id String
+  games       String[]
   status      Status   @default(ACTIVE)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
