@@ -12,6 +12,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailerConfig } from './common/configs/mailer.config';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { CampaignsModule } from './modules/campaigns/campaigns.module';
     JwtModule,
     AuthModule,
     CampaignsModule,
+    NotificationsModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [

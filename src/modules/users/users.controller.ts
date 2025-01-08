@@ -1,4 +1,12 @@
-import { Controller, Get, UseInterceptors, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseInterceptors,
+  Query,
+  Post,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
   ApiBearerAuth,
@@ -10,6 +18,8 @@ import { TransformInterceptor } from 'src/common/interceptors/transform.intercep
 import { AuthUser } from 'src/decorators';
 import { User } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
+import { RedeemVoucherDto } from './dto/redeem-voucher.dto';
+import { GiftVoucherDto } from './dto/gift-voucher.dto';
 
 @ApiTags('Users')
 @Controller('/api/v1/users')
@@ -43,5 +53,52 @@ export class UsersController {
     @Query() pageOptionsDto: PageOptionsDto,
   ) {
     return this.usersService.getUserVouchers(user.user_id, pageOptionsDto);
+  }
+
+  @Post('/vouchers/redeem')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Redeem a voucher' })
+  @ApiResponse({
+    status: 201,
+    description: 'Voucher redeemed successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Voucher redeemed successfully'))
+  async redeemVoucher(
+    @AuthUser() user: User,
+    @Body() redeemVoucherDto: RedeemVoucherDto,
+  ) {
+    return this.usersService.redeemVoucher(user.user_id, redeemVoucherDto);
+  }
+
+  @Get('/vouchers/:voucherId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get user voucher detail' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return user voucher detail',
+  })
+  @UseInterceptors(
+    new TransformInterceptor('User voucher detail retrieved successfully'),
+  )
+  async getUserVoucherDetail(
+    @AuthUser() user: User,
+    @Param('voucherId') voucherId: string,
+  ) {
+    return this.usersService.getUserVoucherDetail(user.user_id, voucherId);
+  }
+
+  @Post('/vouchers/gift')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Gift a voucher to another user' })
+  @ApiResponse({
+    status: 201,
+    description: 'Voucher gifted successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Voucher gifted successfully'))
+  async giftVoucher(
+    @AuthUser() user: User,
+    @Body() giftVoucherDto: GiftVoucherDto,
+  ) {
+    return this.usersService.giftVoucher(user.user_id, giftVoucherDto);
   }
 }
