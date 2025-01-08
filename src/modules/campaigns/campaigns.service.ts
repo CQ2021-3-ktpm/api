@@ -3,6 +3,8 @@ import { PrismaService } from 'nestjs-prisma';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
+import { CampaignType } from './dto/requests/get-all-campaigns.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CampaignsService {
@@ -25,30 +27,45 @@ export class CampaignsService {
 
   async getCampaigns(getAllCampaignsDto: GetAllCampaignsDto) {
     try {
-      const { skip, take, q } = getAllCampaignsDto;
+      const { skip, take, q, type, category_id } = getAllCampaignsDto;
+      const currentDate = new Date();
 
-      const campaigns = await this.prisma.campaign.findMany({
-        skip,
-        take,
-        where: {
-          status: 'ACTIVE',
-          OR: [
-            {
-              brand: {
-                name: {
-                  contains: q,
-                  mode: 'insensitive',
-                },
-              },
-            },
-            {
+      const whereCondition = {
+        status: 'ACTIVE',
+        OR: [
+          {
+            brand: {
               name: {
                 contains: q,
                 mode: 'insensitive',
               },
             },
-          ],
-        },
+          },
+          {
+            name: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+        ],
+        // Filter by campaign type
+        ...(type === CampaignType.CURRENT && {
+          start_date: { lte: currentDate },
+          end_date: { gte: currentDate },
+        }),
+        ...(type === CampaignType.UPCOMING && {
+          start_date: { gt: currentDate },
+        }),
+        // Filter by category_id if provided
+        ...(category_id && {
+          category_id: category_id,
+        }),
+      };
+
+      const campaigns = await this.prisma.campaign.findMany({
+        skip,
+        take,
+        where: whereCondition as Prisma.CampaignWhereInput,
         include: {
           brand: {
             select: {
@@ -63,15 +80,21 @@ export class CampaignsService {
               value: true,
             },
           },
+          Category: {
+            select: {
+              name: true,
+            },
+          },
         },
       });
 
       const filteredCampaigns = {
         campaigns: campaigns.flatMap((campaign) => {
-          const { brand, vouchers, ...rest } = campaign;
+          const { brand, vouchers, Category, ...rest } = campaign;
           return {
             ...rest,
             brand_name: brand.name,
+            category_name: Category?.name,
             values: vouchers.map((voucher) => voucher.value),
           };
         }),

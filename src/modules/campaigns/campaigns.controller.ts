@@ -12,10 +12,14 @@ export class CampaignsController {
 
   @Get('/')
   @PublicRoute(true)
-  @ApiOperation({ summary: 'Get all campaigns' })
+  @ApiOperation({
+    summary: 'Get all campaigns',
+    description:
+      'Get campaigns filtered by type (CURRENT/UPCOMING) and category_id. If filters are not specified, returns all campaigns.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Return all campaigns',
+    description: 'Return filtered campaigns',
   })
   @UseInterceptors(new TransformInterceptor('Campaigns retrieved successfully'))
   getAll(@Query() getAllCampaignsDto: GetAllCampaignsDto) {
