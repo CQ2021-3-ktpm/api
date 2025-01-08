@@ -31,6 +31,7 @@ model User {
   invitations Invitation[]  @relation("UserInvitations")
   Credit      Credit[]
   UserVoucher UserVoucher[]
+  campaign_wishlists CampaignWishlist[]
 }
 
 model Brand {
@@ -87,6 +88,7 @@ model Campaign {
   brand    Brand     @relation(fields: [brand_id], references: [brand_id])
   vouchers Voucher[]
   Category Category? @relation(fields: [category_id], references: [category_id])
+  wishlists CampaignWishlist[]
 }
 
 model Category {
@@ -168,6 +170,19 @@ model Invitation {
 
   // Relationships
   user User @relation("UserInvitations", fields: [user_id], references: [user_id])
+}
+
+model CampaignWishlist {
+  wishlist_id String   @id @default(cuid())
+  user_id     String
+  campaign_id String
+  created_at  DateTime @default(now())
+
+  // Relationships
+  user     User     @relation(fields: [user_id], references: [user_id])
+  campaign Campaign @relation(fields: [campaign_id], references: [campaign_id])
+
+  @@unique([user_id, campaign_id])
 }
 
 enum Role {

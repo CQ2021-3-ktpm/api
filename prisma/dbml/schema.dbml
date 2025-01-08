@@ -20,6 +20,7 @@ Table User {
   invitations Invitation [not null]
   Credit Credit [not null]
   UserVoucher UserVoucher [not null]
+  campaign_wishlists CampaignWishlist [not null]
 }
 
 Table Brand {
@@ -39,6 +40,8 @@ Table Brand {
 
 Table Game {
   game_id String [pk]
+  brand_id String [not null]
+  campaign_id String [not null]
   name String [not null]
   type String [not null]
   instructions String [not null]
@@ -48,6 +51,10 @@ Table Game {
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
   notifications Notification [not null]
+
+  indexes {
+    (brand_id, campaign_id) [unique]
+  }
 }
 
 Table Campaign {
@@ -59,12 +66,14 @@ Table Campaign {
   end_date DateTime [not null]
   description String [not null]
   category_id String [not null]
+  games String[] [not null]
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
   brand Brand [not null]
   vouchers Voucher [not null]
   Category Category
+  wishlists CampaignWishlist [not null]
 }
 
 Table Category {
@@ -138,14 +147,17 @@ Table Invitation {
   user User [not null]
 }
 
-Table Invitation {
-  invitation_id String [pk]
-  email String [not null]
+Table CampaignWishlist {
+  wishlist_id String [pk]
   user_id String [not null]
-  status InvitationStatus [not null, default: 'PENDING']
-  expiresAt DateTime [not null]
+  campaign_id String [not null]
   created_at DateTime [default: `now()`, not null]
-  updated_at DateTime [not null]
+  user User [not null]
+  campaign Campaign [not null]
+
+  indexes {
+    (user_id, campaign_id) [unique]
+  }
 }
 
 Enum Role {
@@ -206,3 +218,7 @@ Ref: Notification.player_id > Game.game_id
 Ref: Credit.player_id > User.user_id
 
 Ref: Invitation.user_id > User.user_id
+
+Ref: CampaignWishlist.user_id > User.user_id
+
+Ref: CampaignWishlist.campaign_id > Campaign.campaign_id

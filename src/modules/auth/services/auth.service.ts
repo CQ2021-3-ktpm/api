@@ -54,6 +54,8 @@ export class AuthService {
       const link = `${process.env.NEXT_PUBLIC_API_URL}/confirm-email?token=${invitation.invitation_id}`;
       await this.mailService.sendSignInEmail(newUser.email, link);
 
+      console.log(link);
+
       return {
         access_token: await this.jwtService.signAsync(newUser),
         email: newUser.email,

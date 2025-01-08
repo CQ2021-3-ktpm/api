@@ -1,10 +1,17 @@
 import { handleError } from 'src/common/utils';
 import { PrismaService } from 'nestjs-prisma';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
-import { CampaignType } from './dto/requests/get-all-campaigns.dto';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import {
+  GetAllCampaignsDto,
+  CampaignType,
+} from './dto/requests/get-all-campaigns.dto';
 import { Prisma } from '@prisma/client';
+import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -128,6 +135,139 @@ export class CampaignsService {
       }
 
       return campaign;
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
+
+  async addToWishlist(userId: string, campaignId: string) {
+    try {
+      // Kiểm tra campaign có tồn tại và là upcoming campaign
+      const campaign = await this.prisma.campaign.findFirst({
+        where: {
+          campaign_id: campaignId,
+          status: 'ACTIVE',
+          start_date: {
+            gt: new Date(),
+          },
+        },
+      });
+
+      if (!campaign) {
+        throw new NotFoundException('Campaign not found or not upcoming');
+      }
+
+      // Thêm vào wishlist
+      const wishlist = await this.prisma.campaignWishlist.create({
+        data: {
+          user_id: userId,
+          campaign_id: campaignId,
+        },
+        include: {
+          campaign: {
+            include: {
+              brand: {
+                select: {
+                  name: true,
+                },
+              },
+              Category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return wishlist;
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        throw new ConflictException('Campaign already in wishlist');
+      }
+      throw handleError(error);
+    }
+  }
+
+  async removeFromWishlist(userId: string, campaignId: string) {
+    try {
+      const wishlist = await this.prisma.campaignWishlist.delete({
+        where: {
+          user_id_campaign_id: {
+            user_id: userId,
+            campaign_id: campaignId,
+          },
+        },
+      });
+
+      return wishlist;
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        throw new NotFoundException('Campaign not found in wishlist');
+      }
+      throw handleError(error);
+    }
+  }
+
+  async getUserWishlist(userId: string, pageOptionsDto: PageOptionsDto) {
+    try {
+      const { skip, take } = pageOptionsDto;
+
+      const wishlists = await this.prisma.campaignWishlist.findMany({
+        where: {
+          user_id: userId,
+        },
+        skip: skip,
+        take: take,
+        include: {
+          campaign: {
+            include: {
+              brand: {
+                select: {
+                  name: true,
+                },
+              },
+              Category: {
+                select: {
+                  name: true,
+                },
+              },
+              vouchers: {
+                orderBy: {
+                  value: 'asc',
+                },
+                select: {
+                  value: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      });
+
+      const filteredWishlists = wishlists.map(({ campaign, ...rest }) => {
+        const { brand, vouchers, Category, ...campaignRest } = campaign;
+        return {
+          ...rest,
+          campaign: {
+            ...campaignRest,
+            brand_name: brand.name,
+            category_name: Category?.name,
+            values: vouchers.map((v) => v.value),
+          },
+        };
+      });
+
+      const pageMetaDto = new PageMetaDto({
+        itemCount: wishlists.length,
+        pageOptionsDto,
+      });
+
+      return { wishlists: filteredWishlists, pageMetaDto };
     } catch (error) {
       throw handleError(error);
     }
