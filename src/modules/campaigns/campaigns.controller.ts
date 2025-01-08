@@ -1,9 +1,27 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Post,
+  Delete,
+  Body,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { CampaignsService } from './campaigns.service';
 import { PublicRoute } from 'src/decorators';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { GetAllCampaignsDto } from './dto/requests/get-all-campaigns.dto';
+import { AddToWishlistDto } from './dto/requests/add-to-wishlist.dto';
+import { AuthUser } from 'src/decorators';
+import { PageOptionsDto } from 'src/common/dto/page-options.dto';
+import { User } from '@prisma/client';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -24,6 +42,21 @@ export class CampaignsController {
   @UseInterceptors(new TransformInterceptor('Campaigns retrieved successfully'))
   getAll(@Query() getAllCampaignsDto: GetAllCampaignsDto) {
     return this.campaignsService.getCampaigns(getAllCampaignsDto);
+  }
+
+  @Get('/wishlist')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get user wishlist' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return user wishlist',
+  })
+  @UseInterceptors(new TransformInterceptor('Wishlist retrieved successfully'))
+  async getWishlist(
+    @AuthUser() user: User,
+    @Query() pageOptionsDto: PageOptionsDto,
+  ) {
+    return this.campaignsService.getUserWishlist(user.user_id, pageOptionsDto);
   }
 
   @Get('/categories')
@@ -50,5 +83,42 @@ export class CampaignsController {
   @UseInterceptors(new TransformInterceptor('Campaign retrieved successfully'))
   getById(@Param('id') id: string) {
     return this.campaignsService.getCampaignById(id);
+  }
+
+  @Post('/wishlist')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add campaign to wishlist' })
+  @ApiResponse({
+    status: 201,
+    description: 'Campaign added to wishlist successfully',
+  })
+  @UseInterceptors(
+    new TransformInterceptor('Campaign added to wishlist successfully'),
+  )
+  async addToWishlist(
+    @AuthUser() user: User,
+    @Body() addToWishlistDto: AddToWishlistDto,
+  ) {
+    return this.campaignsService.addToWishlist(
+      user.user_id,
+      addToWishlistDto.campaign_id,
+    );
+  }
+
+  @Delete('/wishlist/:campaignId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remove campaign from wishlist' })
+  @ApiResponse({
+    status: 200,
+    description: 'Campaign removed from wishlist successfully',
+  })
+  @UseInterceptors(
+    new TransformInterceptor('Campaign removed from wishlist successfully'),
+  )
+  async removeFromWishlist(
+    @AuthUser() user: User,
+    @Param('campaignId') campaignId: string,
+  ) {
+    return this.campaignsService.removeFromWishlist(user.user_id, campaignId);
   }
 }
