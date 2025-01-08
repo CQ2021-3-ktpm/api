@@ -32,6 +32,7 @@ model User {
   Credit      Credit[]
   UserVoucher UserVoucher[]
   campaign_wishlists CampaignWishlist[]
+  notifications Notification[]
 }
 
 model Brand {
@@ -64,9 +65,6 @@ model Game {
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
 
-  // Relationships
-  notifications Notification[]
-
   @@unique([brand_id, campaign_id])
 }
 
@@ -89,6 +87,7 @@ model Campaign {
   vouchers Voucher[]
   Category Category? @relation(fields: [category_id], references: [category_id])
   wishlists CampaignWishlist[]
+  notifications Notification[]
 }
 
 model Category {
@@ -136,15 +135,15 @@ model UserVoucher {
 
 model Notification {
   notification_id String             @id @default(cuid())
-  player_id       String
-  message         String
-  message_type    MessageType
-  event_id        String?
-  status          NotificationStatus @default(UNREAD)
-  created_at      DateTime           @default(now())
+  user_id        String
+  campaign_id    String
+  message        String
+  type          NotificationType
+  status        NotificationStatus   @default(UNREAD)
+  created_at     DateTime           @default(now())
 
-  // Relationships
-  game Game @relation(fields: [player_id], references: [game_id])
+  user     User     @relation(fields: [user_id], references: [user_id])
+  campaign Campaign @relation(fields: [campaign_id], references: [campaign_id])
 }
 
 model Credit {
@@ -215,7 +214,6 @@ enum MessageType {
 }
 
 enum NotificationStatus {
-  SENT
   READ
   UNREAD
 }
@@ -224,4 +222,9 @@ enum InvitationStatus {
   ACCEPTED
   REJECTED
   PENDING
+}
+
+enum NotificationType {
+  CAMPAIGN_START_24H
+  CAMPAIGN_START_30MIN
 }

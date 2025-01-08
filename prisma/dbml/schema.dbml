@@ -21,6 +21,7 @@ Table User {
   Credit Credit [not null]
   UserVoucher UserVoucher [not null]
   campaign_wishlists CampaignWishlist [not null]
+  notifications Notification [not null]
 }
 
 Table Brand {
@@ -50,7 +51,6 @@ Table Game {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
-  notifications Notification [not null]
 
   indexes {
     (brand_id, campaign_id) [unique]
@@ -74,6 +74,7 @@ Table Campaign {
   vouchers Voucher [not null]
   Category Category
   wishlists CampaignWishlist [not null]
+  notifications Notification [not null]
 }
 
 Table Category {
@@ -117,13 +118,14 @@ Table UserVoucher {
 
 Table Notification {
   notification_id String [pk]
-  player_id String [not null]
+  user_id String [not null]
+  campaign_id String [not null]
   message String [not null]
-  message_type MessageType [not null]
-  event_id String
+  type NotificationType [not null]
   status NotificationStatus [not null, default: 'UNREAD']
   created_at DateTime [default: `now()`, not null]
-  game Game [not null]
+  user User [not null]
+  campaign Campaign [not null]
 }
 
 Table Credit {
@@ -190,7 +192,6 @@ Enum MessageType {
 }
 
 Enum NotificationStatus {
-  SENT
   READ
   UNREAD
 }
@@ -199,6 +200,11 @@ Enum InvitationStatus {
   ACCEPTED
   REJECTED
   PENDING
+}
+
+Enum NotificationType {
+  CAMPAIGN_START_24H
+  CAMPAIGN_START_30MIN
 }
 
 Ref: Brand.user_id > User.user_id
@@ -213,7 +219,9 @@ Ref: UserVoucher.user_id > User.user_id
 
 Ref: UserVoucher.voucher_id > Voucher.voucher_id
 
-Ref: Notification.player_id > Game.game_id
+Ref: Notification.user_id > User.user_id
+
+Ref: Notification.campaign_id > Campaign.campaign_id
 
 Ref: Credit.player_id > User.user_id
 
