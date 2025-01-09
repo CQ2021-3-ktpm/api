@@ -22,6 +22,7 @@ import { AddToWishlistDto } from './dto/requests/add-to-wishlist.dto';
 import { AuthUser } from 'src/decorators';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 import { User } from '@prisma/client';
+import { CreateCampaignDto } from './dto/requests/create-campaign.dto';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -120,5 +121,23 @@ export class CampaignsController {
     @Param('campaignId') campaignId: string,
   ) {
     return this.campaignsService.removeFromWishlist(user.user_id, campaignId);
+  }
+
+  @Post('/')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create new campaign' })
+  @ApiResponse({
+    status: 201,
+    description: 'Campaign created successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Campaign created successfully'))
+  async createCampaign(
+    @AuthUser() user: User,
+    @Body() createCampaignDto: CreateCampaignDto,
+  ) {
+    return this.campaignsService.createCampaign(
+      user.user_id,
+      createCampaignDto,
+    );
   }
 }

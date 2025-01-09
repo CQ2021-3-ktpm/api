@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   GetAllCampaignsDto,
@@ -12,6 +13,7 @@ import {
 } from './dto/requests/get-all-campaigns.dto';
 import { Prisma } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
+import { CreateCampaignDto } from './dto/requests/create-campaign.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -268,6 +270,68 @@ export class CampaignsService {
       });
 
       return { wishlists: filteredWishlists, pageMetaDto };
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
+
+  async createCampaign(userId: string, createCampaignDto: CreateCampaignDto) {
+    try {
+      // Check if user has a brand
+      const brand = await this.prisma.brand.findFirst({
+        where: {
+          user_id: userId,
+          status: 'ACTIVE',
+        },
+      });
+
+      if (!brand) {
+        throw new ForbiddenException('User does not have an active brand');
+      }
+
+      // Validate dates
+      const startDate = new Date(createCampaignDto.start_date);
+      const endDate = new Date(createCampaignDto.end_date);
+      const now = new Date();
+
+      if (startDate <= now) {
+        throw new ForbiddenException('Start date must be in the future');
+      }
+
+      if (endDate <= startDate) {
+        throw new ForbiddenException('End date must be after start date');
+      }
+
+      // Create campaign with vouchers in a transaction
+      const campaign = await this.prisma.$transaction(async (prisma) => {
+        const newCampaign = await prisma.campaign.create({
+          data: {
+            brand_id: brand.brand_id,
+            name: createCampaignDto.name,
+            image_url: createCampaignDto.image_url,
+            start_date: startDate,
+            end_date: endDate,
+            description: createCampaignDto.description,
+            category_id: createCampaignDto.category_id,
+            games: createCampaignDto.games,
+          },
+        });
+
+        // Create vouchers for the campaign
+        await prisma.voucher.createMany({
+          data: createCampaignDto.vouchers.map((voucher) => ({
+            campaign_id: newCampaign.campaign_id,
+            value: voucher.value,
+            quantity: voucher.quantity,
+            description: voucher.description,
+            expiration_date: new Date(voucher.expiration_date),
+          })),
+        });
+
+        return newCampaign;
+      });
+
+      return campaign;
     } catch (error) {
       throw handleError(error);
     }
