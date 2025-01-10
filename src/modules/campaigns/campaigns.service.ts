@@ -302,7 +302,7 @@ export class CampaignsService {
         throw new ForbiddenException('End date must be after start date');
       }
 
-      // Create campaign with vouchers in a transaction
+      // Create campaign with vouchers and games in a transaction
       const campaign = await this.prisma.$transaction(async (prisma) => {
         const newCampaign = await prisma.campaign.create({
           data: {
@@ -327,6 +327,19 @@ export class CampaignsService {
             expiration_date: new Date(voucher.expiration_date),
           })),
         });
+
+        // Create games for the campaign
+        if (createCampaignDto.games && createCampaignDto.games.length > 0) {
+          await prisma.game.createMany({
+            data: createCampaignDto.games.map((gameName) => ({
+              brand_id: brand.brand_id,
+              campaign_id: newCampaign.campaign_id,
+              name: `${newCampaign.name} - ${gameName}`,
+              type: gameName,
+              instructions: 'Default game instructions', // You might want to make this configurable
+            })),
+          });
+        }
 
         return newCampaign;
       });
