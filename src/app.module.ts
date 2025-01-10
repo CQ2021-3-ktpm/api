@@ -1,6 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
+import { loggingMiddleware, PrismaModule } from 'nestjs-prisma';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
@@ -15,6 +15,7 @@ import { MailerConfig } from './common/configs/mailer.config';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AdminModule } from '@/modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AuthModule,
     CampaignsModule,
     NotificationsModule,
+    AdminModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
