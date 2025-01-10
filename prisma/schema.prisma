@@ -64,8 +64,6 @@ model Game {
   status                Status   @default(ACTIVE)
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
-
-  @@unique([brand_id, campaign_id])
 }
 
 model Campaign {

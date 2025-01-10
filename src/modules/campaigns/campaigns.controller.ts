@@ -7,6 +7,7 @@ import {
   Delete,
   Body,
   UseInterceptors,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -22,6 +23,10 @@ import { AddToWishlistDto } from './dto/requests/add-to-wishlist.dto';
 import { AuthUser } from 'src/decorators';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 import { User } from '@prisma/client';
+import { CreateCampaignDto } from './dto/requests/create-campaign.dto';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RoleType } from 'src/common/constants';
+import { UpdateCampaignDto } from './dto/requests/update-campaign.dto';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -122,6 +127,40 @@ export class CampaignsController {
     return this.campaignsService.removeFromWishlist(user.user_id, campaignId);
   }
 
+  @Post('/')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create new campaign' })
+  @ApiResponse({
+    status: 201,
+    description: 'Campaign created successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Campaign created successfully'))
+  async createCampaign(
+    @AuthUser() user: User,
+    @Body() createCampaignDto: CreateCampaignDto,
+  ) {
+    return this.campaignsService.createCampaign(
+      user.user_id,
+      createCampaignDto,
+    );
+  }
+
+  @Delete('/:id')
+  @ApiBearerAuth()
+  @Roles([RoleType.BRAND])
+  @ApiOperation({ summary: 'Delete campaign (set status to INACTIVE)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Campaign deleted successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Campaign deleted successfully'))
+  async deleteCampaign(
+    @AuthUser() user: User,
+    @Param('id') campaignId: string,
+  ) {
+    return this.campaignsService.deleteCampaign(user.user_id, campaignId);
+  }
+
   @Get('/wishlist/:campaignId/check')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Check if campaign is in wishlist' })
@@ -137,5 +176,26 @@ export class CampaignsController {
     @Param('campaignId') campaignId: string,
   ) {
     return this.campaignsService.checkWishlist(user.user_id, campaignId);
+  }
+
+  @Patch('/:id')
+  @ApiBearerAuth()
+  @Roles([RoleType.BRAND])
+  @ApiOperation({ summary: 'Update campaign' })
+  @ApiResponse({
+    status: 200,
+    description: 'Campaign updated successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Campaign updated successfully'))
+  async updateCampaign(
+    @AuthUser() user: User,
+    @Param('id') campaignId: string,
+    @Body() updateCampaignDto: UpdateCampaignDto,
+  ) {
+    return this.campaignsService.updateCampaign(
+      user.user_id,
+      campaignId,
+      updateCampaignDto,
+    );
   }
 }

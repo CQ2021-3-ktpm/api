@@ -51,10 +51,6 @@ Table Game {
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
-
-  indexes {
-    (brand_id, campaign_id) [unique]
-  }
 }
 
 Table Campaign {
