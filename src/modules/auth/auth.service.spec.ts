@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+// @ts-ignore
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
