@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
 import config from './common/configs/config';
 import { UsersModule } from './modules/users/users.module';
+import { BrandsModule } from './modules/brand/brands.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from '@algoan/nestjs-logging-interceptor';
 import { JwtModule } from '@nestjs/jwt';
@@ -32,6 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
     MailerConfig,
     UsersModule,
+    BrandsModule,
     JwtModule,
     AuthModule,
     CampaignsModule,
