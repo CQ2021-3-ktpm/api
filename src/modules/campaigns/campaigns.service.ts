@@ -380,4 +380,38 @@ export class CampaignsService {
       throw handleError(error);
     }
   }
+
+  async deleteCampaign(userId: string, campaignId: string) {
+    try {
+      // Check if campaign exists and belongs to user's brand
+      console.log(userId, campaignId);
+      const campaign = await this.prisma.campaign.findFirst({
+        where: {
+          campaign_id: campaignId,
+          brand: {
+            user_id: userId,
+            status: 'ACTIVE',
+          },
+        },
+      });
+
+      if (!campaign) {
+        throw new NotFoundException('Campaign not found or unauthorized');
+      }
+
+      // Update campaign status to INACTIVE
+      const updatedCampaign = await this.prisma.campaign.update({
+        where: {
+          campaign_id: campaignId,
+        },
+        data: {
+          status: 'INACTIVE',
+        },
+      });
+
+      return updatedCampaign;
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
 }

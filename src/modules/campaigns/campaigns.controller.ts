@@ -23,6 +23,8 @@ import { AuthUser } from 'src/decorators';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 import { User } from '@prisma/client';
 import { CreateCampaignDto } from './dto/requests/create-campaign.dto';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RoleType } from 'src/common/constants';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -139,6 +141,22 @@ export class CampaignsController {
       user.user_id,
       createCampaignDto,
     );
+  }
+
+  @Delete('/:id')
+  @ApiBearerAuth()
+  @Roles([RoleType.BRAND])
+  @ApiOperation({ summary: 'Delete campaign (set status to INACTIVE)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Campaign deleted successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Campaign deleted successfully'))
+  async deleteCampaign(
+    @AuthUser() user: User,
+    @Param('id') campaignId: string,
+  ) {
+    return this.campaignsService.deleteCampaign(user.user_id, campaignId);
   }
 
   @Get('/wishlist/:campaignId/check')
