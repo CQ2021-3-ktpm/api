@@ -4,13 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { User, VoucherStatus } from '@prisma/client';
+import { Prisma, User, VoucherStatus } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 import { handleError } from 'src/common/utils';
 import { generateVoucherCode } from 'src/common/utils/generate-code';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { GiftVoucherDto } from './dto/gift-voucher.dto';
 import { VoucherFilterDto } from './dto/voucher-filter.dto';
+import { SearchUsersDto } from './dto/search-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -201,12 +202,12 @@ export class UsersService {
     }
   }
 
-  async getUserVoucherDetail(userId: string, voucherId: string) {
+  async getUserVoucherDetail(userId: string, userVoucherId: string) {
     try {
       const userVoucher = await this.prisma.userVoucher.findFirst({
         where: {
+          user_voucher_id: userVoucherId,
           user_id: userId,
-          voucher_id: voucherId,
         },
         include: {
           voucher: {
@@ -356,6 +357,74 @@ export class UsersService {
           },
         };
       });
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
+
+  async searchUsers(searchDto: SearchUsersDto) {
+    try {
+      const { q } = searchDto;
+      const skip = Number(searchDto.skip) || 0;
+      const take = Number(searchDto.take) || 10;
+
+      const whereCondition = {
+        role: 'USER',
+        ...(q && {
+          OR: [
+            {
+              name: {
+                contains: q,
+                mode: 'insensitive',
+              },
+            },
+            {
+              email: {
+                contains: q,
+                mode: 'insensitive',
+              },
+            },
+            {
+              phone_number: {
+                contains: q,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        }),
+      };
+
+      const [users, total] = await Promise.all([
+        this.prisma.user.findMany({
+          where: whereCondition as Prisma.UserWhereInput,
+          select: {
+            user_id: true,
+            name: true,
+            email: true,
+            phone_number: true,
+            avatar_url: true,
+            created_at: true,
+          },
+          skip,
+          take,
+          orderBy: {
+            created_at: 'desc',
+          },
+        }),
+        this.prisma.user.count({
+          where: whereCondition as Prisma.UserWhereInput,
+        }),
+      ]);
+
+      const pageMetaDto = new PageMetaDto({
+        itemCount: total,
+        pageOptionsDto: searchDto,
+      });
+
+      return {
+        data: users,
+        meta: pageMetaDto,
+      };
     } catch (error) {
       throw handleError(error);
     }

@@ -21,6 +21,7 @@ import { User } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 import { GiftVoucherDto } from './dto/gift-voucher.dto';
 import { VoucherFilterDto } from './dto/voucher-filter.dto';
+import { SearchUsersDto } from './dto/search-users.dto';
 
 @ApiTags('Users')
 @Controller('/api/v1/users')
@@ -61,6 +62,18 @@ export class UsersController {
     );
   }
 
+  @Get('/search')
+  @ApiOperation({ summary: 'Search users' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return searched users',
+  })
+  @PublicRoute(true)
+  @UseInterceptors(new TransformInterceptor('Users retrieved successfully'))
+  async searchUsers(@Query() searchDto: SearchUsersDto) {
+    return this.usersService.searchUsers(searchDto);
+  }
+
   @Get('/vouchers/:userVoucherId/redeem')
   @ApiOperation({ summary: 'Redeem a voucher' })
   @ApiResponse({
@@ -73,7 +86,7 @@ export class UsersController {
     return this.usersService.redeemVoucher(userVoucherId);
   }
 
-  @Get('/vouchers/:voucherId')
+  @Get('/vouchers/:userVoucherId')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user voucher detail' })
   @ApiResponse({
@@ -85,9 +98,9 @@ export class UsersController {
   )
   async getUserVoucherDetail(
     @AuthUser() user: User,
-    @Param('voucherId') voucherId: string,
+    @Param('userVoucherId') userVoucherId: string,
   ) {
-    return this.usersService.getUserVoucherDetail(user.user_id, voucherId);
+    return this.usersService.getUserVoucherDetail(user.user_id, userVoucherId);
   }
 
   @Post('/vouchers/gift')
