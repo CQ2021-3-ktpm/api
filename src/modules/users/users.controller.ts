@@ -1,3 +1,4 @@
+import { PublicRoute } from './../../decorators/public-route.decorator';
 import {
   Controller,
   Get,
@@ -18,8 +19,8 @@ import { TransformInterceptor } from 'src/common/interceptors/transform.intercep
 import { AuthUser } from 'src/decorators';
 import { User } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
-import { RedeemVoucherDto } from './dto/redeem-voucher.dto';
 import { GiftVoucherDto } from './dto/gift-voucher.dto';
+import { VoucherFilterDto } from './dto/voucher-filter.dto';
 
 @ApiTags('Users')
 @Controller('/api/v1/users')
@@ -55,19 +56,16 @@ export class UsersController {
     return this.usersService.getUserVouchers(user.user_id, pageOptionsDto);
   }
 
-  @Post('/vouchers/redeem')
-  @ApiBearerAuth()
+  @Get('/vouchers/:userVoucherId/redeem')
   @ApiOperation({ summary: 'Redeem a voucher' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Voucher redeemed successfully',
   })
+  @PublicRoute(true)
   @UseInterceptors(new TransformInterceptor('Voucher redeemed successfully'))
-  async redeemVoucher(
-    @AuthUser() user: User,
-    @Body() redeemVoucherDto: RedeemVoucherDto,
-  ) {
-    return this.usersService.redeemVoucher(user.user_id, redeemVoucherDto);
+  async redeemVoucher(@Param('userVoucherId') userVoucherId: string) {
+    return this.usersService.redeemVoucher(userVoucherId);
   }
 
   @Get('/vouchers/:voucherId')
@@ -83,8 +81,13 @@ export class UsersController {
   async getUserVoucherDetail(
     @AuthUser() user: User,
     @Param('voucherId') voucherId: string,
+    @Query() filterDto: VoucherFilterDto,
   ) {
-    return this.usersService.getUserVoucherDetail(user.user_id, voucherId);
+    return this.usersService.getUserVoucherDetail(
+      user.user_id,
+      voucherId,
+      filterDto,
+    );
   }
 
   @Post('/vouchers/gift')

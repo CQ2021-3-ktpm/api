@@ -6,11 +6,11 @@ import {
 import { PrismaService } from 'nestjs-prisma';
 import { User, VoucherStatus } from '@prisma/client';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
-import { RedeemVoucherDto } from './dto/redeem-voucher.dto';
 import { handleError } from 'src/common/utils';
 import { generateVoucherCode } from 'src/common/utils/generate-code';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { GiftVoucherDto } from './dto/gift-voucher.dto';
+import { VoucherFilterDto } from './dto/voucher-filter.dto';
 
 @Injectable()
 export class UsersService {
@@ -116,61 +116,44 @@ export class UsersService {
     }
   }
 
-  async redeemVoucher(userId: string, redeemVoucherDto: RedeemVoucherDto) {
+  async redeemVoucher(userVoucherId: string) {
     try {
-      const { voucher_id } = redeemVoucherDto;
-
-      // Check if voucher exists and is available
-      const voucher = await this.prisma.voucher.findUnique({
-        where: { voucher_id },
+      // Check if user voucher exists and belongs to the user
+      const userVoucher = await this.prisma.userVoucher.findFirst({
+        where: {
+          user_voucher_id: userVoucherId,
+          status: VoucherStatus.UNUSED,
+        },
         include: {
-          campaign: true,
-          UserVoucher: {
-            where: {
-              voucher_id,
+          voucher: {
+            include: {
+              campaign: true,
             },
           },
         },
       });
 
-      if (!voucher) {
-        throw new NotFoundException('Voucher not found');
-      }
-
-      // Check if voucher is still available (quantity > number of redeemed)
-      if (voucher.UserVoucher.length >= voucher.quantity) {
-        throw new ConflictException('Voucher out of stock');
-      }
-
-      // Check if user already redeemed this voucher
-      const existingUserVoucher = await this.prisma.userVoucher.findFirst({
-        where: {
-          user_id: userId,
-          voucher_id,
-        },
-      });
-
-      if (existingUserVoucher) {
-        throw new ConflictException('You have already redeemed this voucher');
+      if (!userVoucher) {
+        throw new NotFoundException('User voucher not found or already used');
       }
 
       // Check if campaign is still active
       const currentDate = new Date();
       if (
-        voucher.campaign.status !== 'ACTIVE' ||
-        voucher.campaign.start_date > currentDate ||
-        voucher.campaign.end_date < currentDate
+        userVoucher.voucher.campaign.status !== 'ACTIVE' ||
+        userVoucher.voucher.campaign.end_date < currentDate
       ) {
-        throw new ConflictException('Campaign is not active');
+        throw new ConflictException('Campaign is not active or has expired');
       }
 
-      // Create user voucher
-      const userVoucher = await this.prisma.userVoucher.create({
+      // Update user voucher status to USED
+      const updatedUserVoucher = await this.prisma.userVoucher.update({
+        where: {
+          user_voucher_id: userVoucherId,
+        },
         data: {
-          user_id: userId,
-          voucher_id,
-          code: generateVoucherCode(),
-          status: VoucherStatus.UNUSED,
+          status: VoucherStatus.USED,
+          used_at: new Date(),
         },
         include: {
           voucher: {
@@ -185,18 +168,56 @@ export class UsersService {
         },
       });
 
-      return userVoucher;
+      return updatedUserVoucher;
     } catch (error) {
       throw handleError(error);
     }
   }
 
-  async getUserVoucherDetail(userId: string, voucherId: string) {
+  async getUserVoucherDetail(
+    userId: string,
+    voucherId: string,
+    filterDto: VoucherFilterDto,
+  ) {
     try {
+      const { status, campaignName, brandName, expirationDate } = filterDto;
+
       const userVoucher = await this.prisma.userVoucher.findFirst({
         where: {
           user_id: userId,
           voucher_id: voucherId,
+          ...(status && {
+            status,
+          }),
+          ...(campaignName && {
+            voucher: {
+              campaign: {
+                name: {
+                  contains: campaignName,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          }),
+          ...(brandName && {
+            voucher: {
+              campaign: {
+                brand: {
+                  name: {
+                    contains: brandName,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          }),
+          ...(expirationDate && {
+            voucher: {
+              expiration_date: {
+                lte: new Date(expirationDate),
+              },
+            },
+          }),
         },
         include: {
           voucher: {
@@ -220,7 +241,21 @@ export class UsersService {
         throw new NotFoundException('User voucher not found');
       }
 
-      return userVoucher;
+      const result = {
+        ...userVoucher,
+        isExpired: userVoucher.voucher.expiration_date < new Date(),
+        daysUntilExpiration: Math.ceil(
+          (userVoucher.voucher.expiration_date.getTime() -
+            new Date().getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
+        canBeUsed:
+          userVoucher.status === VoucherStatus.UNUSED &&
+          userVoucher.voucher.expiration_date > new Date() &&
+          userVoucher.voucher.campaign.status === 'ACTIVE',
+      };
+
+      return result;
     } catch (error) {
       throw handleError(error);
     }
@@ -230,7 +265,6 @@ export class UsersService {
     try {
       const { user_voucher_id, recipient_email } = giftVoucherDto;
 
-      // Check if user voucher exists and belongs to the user
       const userVoucher = await this.prisma.userVoucher.findFirst({
         where: {
           user_voucher_id,
