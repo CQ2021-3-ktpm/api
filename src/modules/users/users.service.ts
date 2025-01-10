@@ -38,12 +38,27 @@ export class UsersService {
     return result;
   }
 
-  async getUserVouchers(userId: string, pageOptionsDto: PageOptionsDto) {
+  async getUserVouchers(
+    userId: string,
+    pageOptionsDto: PageOptionsDto,
+    filterDto: VoucherFilterDto,
+  ) {
     try {
       const { skip, take, order, q } = pageOptionsDto;
+      const { status, expirationDate } = filterDto;
 
       const whereCondition: any = {
         user_id: userId,
+        ...(status && {
+          status,
+        }),
+        ...(expirationDate && {
+          voucher: {
+            expiration_date: {
+              lte: new Date(expirationDate),
+            },
+          },
+        }),
         ...(q && {
           voucher: {
             campaign: {
@@ -107,8 +122,20 @@ export class UsersService {
         pageOptionsDto,
       });
 
+      const enhancedUserVouchers = userVouchers.map((voucher) => ({
+        ...voucher,
+        isExpired: voucher.voucher.expiration_date < new Date(),
+        daysUntilExpiration: Math.ceil(
+          (voucher.voucher.expiration_date.getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
+        canBeUsed:
+          voucher.status === VoucherStatus.UNUSED &&
+          voucher.voucher.expiration_date > new Date(),
+      }));
+
       return {
-        data: userVouchers,
+        data: enhancedUserVouchers,
         meta: pageMetaDto,
       };
     } catch (error) {
@@ -174,50 +201,12 @@ export class UsersService {
     }
   }
 
-  async getUserVoucherDetail(
-    userId: string,
-    voucherId: string,
-    filterDto: VoucherFilterDto,
-  ) {
+  async getUserVoucherDetail(userId: string, voucherId: string) {
     try {
-      const { status, campaignName, brandName, expirationDate } = filterDto;
-
       const userVoucher = await this.prisma.userVoucher.findFirst({
         where: {
           user_id: userId,
           voucher_id: voucherId,
-          ...(status && {
-            status,
-          }),
-          ...(campaignName && {
-            voucher: {
-              campaign: {
-                name: {
-                  contains: campaignName,
-                  mode: 'insensitive',
-                },
-              },
-            },
-          }),
-          ...(brandName && {
-            voucher: {
-              campaign: {
-                brand: {
-                  name: {
-                    contains: brandName,
-                    mode: 'insensitive',
-                  },
-                },
-              },
-            },
-          }),
-          ...(expirationDate && {
-            voucher: {
-              expiration_date: {
-                lte: new Date(expirationDate),
-              },
-            },
-          }),
         },
         include: {
           voucher: {

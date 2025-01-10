@@ -52,8 +52,13 @@ export class UsersController {
   async getUserVouchers(
     @AuthUser() user: User,
     @Query() pageOptionsDto: PageOptionsDto,
+    @Query() filterDto: VoucherFilterDto,
   ) {
-    return this.usersService.getUserVouchers(user.user_id, pageOptionsDto);
+    return this.usersService.getUserVouchers(
+      user.user_id,
+      pageOptionsDto,
+      filterDto,
+    );
   }
 
   @Get('/vouchers/:userVoucherId/redeem')
@@ -81,13 +86,8 @@ export class UsersController {
   async getUserVoucherDetail(
     @AuthUser() user: User,
     @Param('voucherId') voucherId: string,
-    @Query() filterDto: VoucherFilterDto,
   ) {
-    return this.usersService.getUserVoucherDetail(
-      user.user_id,
-      voucherId,
-      filterDto,
-    );
+    return this.usersService.getUserVoucherDetail(user.user_id, voucherId);
   }
 
   @Post('/vouchers/gift')

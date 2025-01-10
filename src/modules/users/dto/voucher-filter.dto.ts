@@ -12,20 +12,6 @@ export class VoucherFilterDto {
   status?: VoucherStatus;
 
   @ApiPropertyOptional({
-    description: 'Filter by campaign name',
-    example: 'Summer Campaign',
-  })
-  @IsOptional()
-  campaignName?: string;
-
-  @ApiPropertyOptional({
-    description: 'Filter by brand name',
-    example: 'Nike',
-  })
-  @IsOptional()
-  brandName?: string;
-
-  @ApiPropertyOptional({
     description: 'Filter by expiration date (ISO string)',
     example: '2024-12-31',
   })
