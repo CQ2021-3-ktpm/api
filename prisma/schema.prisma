@@ -27,12 +27,12 @@ model User {
   updated_at    DateTime  @updatedAt
 
   // Relationships
-  brands      Brand[]       @relation("UserBrands")
-  invitations Invitation[]  @relation("UserInvitations")
-  Credit      Credit[]
-  UserVoucher UserVoucher[]
+  brands             Brand[]            @relation("UserBrands")
+  invitations        Invitation[]       @relation("UserInvitations")
+  Credit             Credit[]
+  UserVoucher        UserVoucher[]
   campaign_wishlists CampaignWishlist[]
-  notifications Notification[]
+  notifications      Notification[]
 }
 
 model Brand {
@@ -41,8 +41,8 @@ model Brand {
   name       String
   industry   String
   address    String
-  latitude   Float
-  longitude  Float
+  latitude   Float?
+  longitude  Float?
   status     Status   @default(ACTIVE)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -83,10 +83,10 @@ model Campaign {
   updated_at  DateTime @updatedAt
 
   // Relationships
-  brand    Brand     @relation(fields: [brand_id], references: [brand_id])
-  vouchers Voucher[]
-  Category Category? @relation(fields: [category_id], references: [category_id])
-  wishlists CampaignWishlist[]
+  brand         Brand              @relation(fields: [brand_id], references: [brand_id])
+  vouchers      Voucher[]
+  Category      Category?          @relation(fields: [category_id], references: [category_id])
+  wishlists     CampaignWishlist[]
   notifications Notification[]
 }
 
@@ -135,12 +135,12 @@ model UserVoucher {
 
 model Notification {
   notification_id String             @id @default(cuid())
-  user_id        String
-  campaign_id    String
-  message        String
-  type          NotificationType
-  status        NotificationStatus   @default(UNREAD)
-  created_at     DateTime           @default(now())
+  user_id         String
+  campaign_id     String
+  message         String
+  type            NotificationType
+  status          NotificationStatus @default(UNREAD)
+  created_at      DateTime           @default(now())
 
   user     User     @relation(fields: [user_id], references: [user_id])
   campaign Campaign @relation(fields: [campaign_id], references: [campaign_id])
