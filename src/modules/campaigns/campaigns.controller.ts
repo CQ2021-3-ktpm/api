@@ -7,6 +7,7 @@ import {
   Delete,
   Body,
   UseInterceptors,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -25,6 +26,7 @@ import { User } from '@prisma/client';
 import { CreateCampaignDto } from './dto/requests/create-campaign.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RoleType } from 'src/common/constants';
+import { UpdateCampaignDto } from './dto/requests/update-campaign.dto';
 
 @ApiTags('Campaigns')
 @Controller('/api/v1/campaigns')
@@ -174,5 +176,26 @@ export class CampaignsController {
     @Param('campaignId') campaignId: string,
   ) {
     return this.campaignsService.checkWishlist(user.user_id, campaignId);
+  }
+
+  @Patch('/:id')
+  @ApiBearerAuth()
+  @Roles([RoleType.BRAND])
+  @ApiOperation({ summary: 'Update campaign' })
+  @ApiResponse({
+    status: 200,
+    description: 'Campaign updated successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Campaign updated successfully'))
+  async updateCampaign(
+    @AuthUser() user: User,
+    @Param('id') campaignId: string,
+    @Body() updateCampaignDto: UpdateCampaignDto,
+  ) {
+    return this.campaignsService.updateCampaign(
+      user.user_id,
+      campaignId,
+      updateCampaignDto,
+    );
   }
 }
