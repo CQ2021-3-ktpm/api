@@ -272,4 +272,36 @@ export class CampaignsService {
       throw handleError(error);
     }
   }
+
+  async checkWishlist(userId: string, campaignId: string) {
+    try {
+      const wishlistItem = await this.prisma.campaignWishlist.findUnique({
+        where: {
+          user_id_campaign_id: {
+            user_id: userId,
+            campaign_id: campaignId,
+          },
+        },
+        include: {
+          campaign: {
+            select: {
+              name: true,
+              brand: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return {
+        isInWishlist: !!wishlistItem,
+        campaign: wishlistItem?.campaign,
+      };
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
 }

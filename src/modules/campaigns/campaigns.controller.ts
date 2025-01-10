@@ -121,4 +121,21 @@ export class CampaignsController {
   ) {
     return this.campaignsService.removeFromWishlist(user.user_id, campaignId);
   }
+
+  @Get('/wishlist/:campaignId/check')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check if campaign is in wishlist' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return wishlist status of campaign',
+  })
+  @UseInterceptors(
+    new TransformInterceptor('Wishlist status checked successfully'),
+  )
+  async checkWishlist(
+    @AuthUser() user: User,
+    @Param('campaignId') campaignId: string,
+  ) {
+    return this.campaignsService.checkWishlist(user.user_id, campaignId);
+  }
 }
