@@ -9,11 +9,17 @@ import {
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { AuthUser } from 'src/decorators';
 import { User } from '@prisma/client';
+import { Cron } from '@nestjs/schedule';
 
 @ApiTags('Notifications')
 @Controller('/api/v1/notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
+
+  @Cron('*/50 * * * * *')
+  async simulateNotification() {
+    await this.notificationsService.simulateNotification();
+  }
 
   @Get()
   @ApiBearerAuth()
@@ -47,5 +53,19 @@ export class NotificationsController {
       notificationId,
       user.user_id,
     );
+  }
+
+  @Patch('/mark-all-read')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  @ApiResponse({
+    status: 200,
+    description: 'All notifications marked as read',
+  })
+  @UseInterceptors(
+    new TransformInterceptor('All notifications marked as read successfully'),
+  )
+  async markAllNotificationsAsRead(@AuthUser() user: User) {
+    return this.notificationsService.markAllNotificationsAsRead(user.user_id);
   }
 }

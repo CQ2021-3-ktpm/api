@@ -149,4 +149,79 @@ export class NotificationsService {
       throw handleError(error);
     }
   }
+
+  async simulateNotification() {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { status: 'ACTIVE' },
+        select: { user_id: true },
+      });
+
+      const campaigns = await this.prisma.campaign.findMany({
+        where: { status: 'ACTIVE' },
+        take: 1,
+        include: {
+          brand: {
+            select: { name: true },
+          },
+        },
+      });
+
+      if (campaigns.length === 0 || users.length === 0) {
+        return;
+      }
+
+      const campaign = campaigns[0];
+      const messages = [
+        `New campaign "${campaign.name}" is trending!`,
+        `Don't miss out on "${campaign.name}" by ${campaign.brand.name}!`,
+        `Hot deal alert for "${campaign.name}"!`,
+        `Special offer in "${campaign.name}" waiting for you!`,
+      ];
+
+      for (const user of users) {
+        const randomMessage =
+          messages[Math.floor(Math.random() * messages.length)];
+
+        const notification = await this.prisma.notification.create({
+          data: {
+            user_id: user.user_id,
+            campaign_id: campaign.campaign_id,
+            message: randomMessage,
+            type: NotificationType.CAMPAIGN_START_30MIN,
+          },
+        });
+
+        await this.notificationEvents.sendNotification(user.user_id, {
+          id: notification.notification_id,
+          message: notification.message,
+          type: notification.type,
+          campaign_id: campaign.campaign_id,
+          created_at: notification.created_at,
+        });
+
+        this.logger.log(`Sent simulation notification to user ${user.user_id}`);
+      }
+    } catch (error) {
+      this.logger.error('Error sending simulation notification:', error);
+      throw handleError(error);
+    }
+  }
+
+  async markAllNotificationsAsRead(userId: string) {
+    try {
+      return await this.prisma.notification.updateMany({
+        where: {
+          user_id: userId,
+          status: 'UNREAD',
+        },
+        data: {
+          status: 'READ',
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error marking all notifications as read:', error);
+      throw handleError(error);
+    }
+  }
 }
