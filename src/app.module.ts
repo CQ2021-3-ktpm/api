@@ -16,6 +16,7 @@ import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from '@/modules/admin/admin.module';
+import { StorageModule } from '@/modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AdminModule } from '@/modules/admin/admin.module';
     CampaignsModule,
     NotificationsModule,
     AdminModule,
+    StorageModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
