@@ -47,6 +47,7 @@ Table Game {
   type String [not null]
   instructions String [not null]
   image_url String
+  metadata Json [not null]
   item_exchange_enabled Boolean [not null, default: false]
   status Status [not null, default: 'ACTIVE']
   created_at DateTime [default: `now()`, not null]

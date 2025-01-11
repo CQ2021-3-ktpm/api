@@ -60,6 +60,7 @@ model Game {
   type                  String
   instructions          String
   image_url             String?
+  metadata              Json
   item_exchange_enabled Boolean  @default(false)
   status                Status   @default(ACTIVE)
   created_at            DateTime @default(now())

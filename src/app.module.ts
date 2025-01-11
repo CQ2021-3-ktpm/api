@@ -17,6 +17,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { StorageModule } from '@/modules/storage/storage.module';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { StorageModule } from '@/modules/storage/storage.module';
     AdminModule,
     StorageModule,
     ScheduleModule.forRoot(),
+    GameModule
   ],
   controllers: [AppController],
   providers: [
