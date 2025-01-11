@@ -4,21 +4,10 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'nestjs-prisma';
-
-interface Question {
-  question: string;
-  choices: string[];
-  correctAnswer: number;
-}
-
-interface GameMetadata {
-  startTime: number;
-  questions: Question[];
-}
+import {GameMetadata} from '@/modules/game/dto/game-metadata.interface';
 
 @WebSocketGateway({
   cors: {

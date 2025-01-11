@@ -337,6 +337,7 @@ export class CampaignsService {
               campaign_id: newCampaign.campaign_id,
               name: `${newCampaign.name} - ${gameName}`,
               type: gameName,
+              metadata: null,
               instructions: 'Default game instructions', // You might want to make this configurable
             })),
           });

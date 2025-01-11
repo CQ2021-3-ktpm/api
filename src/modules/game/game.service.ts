@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PlayGameDto } from './dto/play-game.dto';
 import { PrismaService } from 'nestjs-prisma';
+import { GameMetadata } from '@/modules/game/dto/game-metadata.interface';
 
 @Injectable()
 export class GameService {
@@ -25,7 +26,7 @@ export class GameService {
       return { canPlay: false, message: 'Game has not started yet' };
     }
 
-    const metadata = game.metadata as { questions: any[] };
+    const metadata = game.metadata as unknown as GameMetadata;
     if (!metadata || !metadata.questions) {
       return { canPlay: false, message: 'Invalid game metadata' };
     }
