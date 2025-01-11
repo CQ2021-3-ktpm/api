@@ -33,6 +33,18 @@ class VoucherDto {
   expiration_date: Date;
 }
 
+class GameDto {
+  @ApiProperty({ example: 'game_id' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ example: 'amount' })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
+}
+
 export class CreateCampaignDto {
   @ApiProperty({ example: 'Summer Sale 2024' })
   @IsString()
@@ -64,11 +76,11 @@ export class CreateCampaignDto {
   @IsNotEmpty()
   category_id: string;
 
-  @ApiProperty({ example: ['game1', 'game2'] })
-  @IsArray()
-  @IsString({ each: true })
+  @ApiProperty({ type: [GameDto] })
+  @ValidateNested({ each: true })
+  @Type(() => GameDto)
   @ArrayMinSize(1)
-  games: string[];
+  games: GameDto[];
 
   @ApiProperty({ type: [VoucherDto] })
   @ValidateNested({ each: true })
