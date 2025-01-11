@@ -1,4 +1,4 @@
-import { PublicRoute } from './../../decorators/public-route.decorator';
+import { PublicRoute } from '../../decorators';
 import {
   Controller,
   Post,
