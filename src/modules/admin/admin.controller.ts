@@ -7,8 +7,8 @@ import {
   HttpStatus,
   Param,
   Post,
-  UseInterceptors,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -30,7 +30,7 @@ import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
 @Roles([RoleType.ADMIN])
 @ApiBearerAuth()
 export class AdminController {
-  constructor(private readonly adminService: AdminService) { }
+  constructor(private readonly adminService: AdminService) {}
 
   @HttpCode(HttpStatus.CREATED)
   @Post('/brand-owner')
@@ -67,7 +67,7 @@ export class AdminController {
   }
 
   @HttpCode(HttpStatus.ACCEPTED)
-  @Delete('/brand/:accountId')
+  @Delete('/account/:accountId')
   @ApiOperation({ summary: 'Deactivate account' })
   @ApiResponse({
     status: HttpStatus.ACCEPTED,
