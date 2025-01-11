@@ -23,7 +23,7 @@ import { RoleType } from '@/common/constants';
 import { TransformInterceptor } from '@/common/interceptors/transform.interceptor';
 import { CreateAuthDto } from '@/modules/auth/dto/create-auth.dto';
 import { CreateBrandDto } from '@/modules/admin/dto/create-brand.dto';
-import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
+import { PaginationDto } from './dto/pagination.dto';
 
 @ApiTags('Admin')
 @Controller('/api/v1/admin')
@@ -94,7 +94,22 @@ export class AdminController {
     description: 'Account not exists',
   })
   @UseInterceptors(new TransformInterceptor('List accounts'))
-  getList(@Query() query: GetAllAccountsDto) {
+  getListAccounts(@Query() query: PaginationDto) {
     return this.adminService.listAccounts(query);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('/brands')
+  @ApiOperation({ summary: 'List brand' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Brand list',
+  })
+  @ApiBadRequestResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Brand not exists',
+  })
+  getListBrands(@Query() query: PaginationDto) {
+    return this.adminService.listBrand(query);
   }
 }

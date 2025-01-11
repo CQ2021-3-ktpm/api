@@ -1,6 +1,6 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './../dto/create-auth.dto';
@@ -118,6 +118,9 @@ export class AuthService {
     return {
       access_token: await this.jwtService.signAsync(user),
       email: user.email,
+      role: user.role.toLowerCase(),
+      avatar_url: user.avatar_url,
+      name: user.name,
     };
   }
 }

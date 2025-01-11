@@ -1,4 +1,4 @@
-import { EmailField, NumberField, StringField } from '@/decorators';
+import { EmailField, IsNullable, NumberField, StringField } from '@/decorators';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateBrandDto {
@@ -31,11 +31,13 @@ export class CreateBrandDto {
   })
   industry: string;
 
+  @IsNullable()
   @NumberField({
     description: 'longitude of the brand',
   })
   longitude?: number;
 
+  @IsNullable()
   @NumberField({
     description: 'latitude of the brand',
   })
