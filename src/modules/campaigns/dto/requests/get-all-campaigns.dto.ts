@@ -20,4 +20,12 @@ export class GetAllCampaignsDto extends PageOptionsDto {
   @IsString()
   @IsOptional()
   category_id?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter campaigns by brand ID',
+    example: 'brand-123',
+  })
+  @IsString()
+  @IsOptional()
+  brand_id?: string;
 }

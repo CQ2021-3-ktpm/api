@@ -37,7 +37,7 @@ export class CampaignsService {
 
   async getCampaigns(getAllCampaignsDto: GetAllCampaignsDto) {
     try {
-      const { skip, take, q, type, category_id } = getAllCampaignsDto;
+      const { skip, take, q, type, category_id, brand_id } = getAllCampaignsDto;
       const currentDate = new Date();
 
       const whereCondition = {
@@ -69,6 +69,9 @@ export class CampaignsService {
         // Filter by category_id if provided
         ...(category_id && {
           category_id: category_id,
+        }),
+        ...(brand_id && {
+          brand_id: brand_id,
         }),
       };
 

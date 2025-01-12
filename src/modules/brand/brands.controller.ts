@@ -5,6 +5,7 @@ import {
   Post,
   Param,
   Body,
+  Put,
 } from '@nestjs/common';
 import { BrandsService } from './brands.service';
 import {
@@ -19,27 +20,28 @@ import { User } from '@prisma/client';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RoleType } from 'src/common/constants';
+import { UpdateBrandDto } from './dto/update-brand.dto';
 
 @ApiTags('Brands')
 @Controller('/api/v1/brands')
 export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}
 
-  @Post('/create')
-  @Roles([RoleType.BRAND])
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new brand' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brand created successfully',
-  })
-  @UseInterceptors(new TransformInterceptor('Brand created successfully'))
-  async createBrand(
-    @AuthUser() user: User,
-    @Body() createBrandDto: CreateBrandDto,
-  ) {
-    return this.brandsService.createBrand(user.user_id, createBrandDto);
-  }
+  // @Post('/create')
+  // @Roles([RoleType.BRAND])
+  // @ApiBearerAuth()
+  // @ApiOperation({ summary: 'Create a new brand' })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'Brand created successfully',
+  // })
+  // @UseInterceptors(new TransformInterceptor('Brand created successfully'))
+  // async createBrand(
+  //   @AuthUser() user: User,
+  //   @Body() createBrandDto: CreateBrandDto,
+  // ) {
+  //   return this.brandsService.createBrand(user.user_id, createBrandDto);
+  // }
 
   @Get(':id')
   @ApiBearerAuth()
@@ -62,5 +64,22 @@ export class BrandsController {
   })
   async getCampaignsForBrand(@AuthUser() user: User) {
     return this.brandsService.getCampaignsForBrand(user.user_id);
+  }
+
+  @Put(':id')
+  @Roles([RoleType.BRAND])
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update brand information' })
+  @ApiResponse({
+    status: 200,
+    description: 'Brand updated successfully',
+  })
+  @UseInterceptors(new TransformInterceptor('Brand updated successfully'))
+  async updateBrand(
+    @Param('id') id: string,
+    @Body() updateBrandDto: UpdateBrandDto,
+    @AuthUser() user: User,
+  ) {
+    return this.brandsService.updateBrand(id, updateBrandDto, user);
   }
 }

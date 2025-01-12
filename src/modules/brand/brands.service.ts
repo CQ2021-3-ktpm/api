@@ -1,13 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { Brand } from '@prisma/client';
+import { Brand, User } from '@prisma/client';
 
 import { handleError } from 'src/common/utils';
 import { CreateBrandDto } from './dto/create-brand.dto';
+import { UpdateBrandDto } from './dto/update-brand.dto';
 
 @Injectable()
 export class BrandsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async createBrand(
     userId: string,
@@ -84,5 +90,28 @@ export class BrandsService {
         },
       },
     });
+  }
+
+  async updateBrand(
+    brandId: string,
+    updateBrandDto: UpdateBrandDto,
+    user: User,
+  ): Promise<Brand> {
+    const brand = await this.getBrandById(brandId);
+
+    if (brand.user_id !== user.user_id) {
+      throw new ForbiddenException(
+        'You are not authorized to update this brand',
+      );
+    }
+
+    try {
+      return await this.prisma.brand.update({
+        where: { brand_id: brandId },
+        data: updateBrandDto,
+      });
+    } catch (error) {
+      handleError(error);
+    }
   }
 }
