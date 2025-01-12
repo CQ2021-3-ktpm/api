@@ -24,6 +24,7 @@ import { TransformInterceptor } from '@/common/interceptors/transform.intercepto
 import { CreateAuthDto } from '@/modules/auth/dto/create-auth.dto';
 import { CreateBrandDto } from '@/modules/admin/dto/create-brand.dto';
 import { PaginationDto } from './dto/pagination.dto';
+import { PromptDto } from '@/modules/admin/dto/prompt-dto';
 
 @ApiTags('Admin')
 @Controller('/api/v1/admin')
@@ -111,5 +112,20 @@ export class AdminController {
   })
   getListBrands(@Query() query: PaginationDto) {
     return this.adminService.listBrand(query);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('/prompt')
+  @ApiOperation({ summary: 'AI Assistant' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Received',
+  })
+  @ApiBadRequestResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Bad request',
+  })
+  prompt(@Body() message: PromptDto) {
+    return this.adminService.processMessage(message);
   }
 }

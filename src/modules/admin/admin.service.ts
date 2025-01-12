@@ -2,17 +2,18 @@ import { PrismaService } from 'nestjs-prisma';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from '@/modules/users/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/auth/services/mail.service';
 import { CreateBrandDto } from '@/modules/admin/dto/create-brand.dto';
 import { Role, Status } from '@prisma/client';
 import { PaginationDto } from './dto/pagination.dto';
+import { LlmService } from '@/modules/llm/llm.service';
+import { PromptDto } from '@/modules/admin/dto/prompt-dto';
 
 @Injectable()
 export class AdminService {
   constructor(
-    private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly llmService: LlmService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -131,6 +132,16 @@ export class AdminService {
     return {
       brands: brands,
       total: brands.length,
+    };
+  }
+
+  async processMessage(dto: PromptDto) {
+    this.llmService
+      .prompt(dto.message)
+      .then((response) => console.log(response));
+
+    return {
+      message: 'ok',
     };
   }
 }
