@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Brand } from '@prisma/client';
 
@@ -11,7 +7,7 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 
 @Injectable()
 export class BrandsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createBrand(
     userId: string,
@@ -59,5 +55,34 @@ export class BrandsService {
       campaigns: brandWithCampaigns[0].campaigns,
       total: brandWithCampaigns[0].campaigns.length,
     };
+  }
+
+  async listAll() {
+    return this.prisma.brand.findMany({
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  async listByNames(names: string[]) {
+    return this.prisma.brand.findMany({
+      where: {
+        name: {
+          in: names,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
   }
 }
