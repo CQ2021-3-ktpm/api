@@ -100,23 +100,32 @@ export class BrandsService {
     }
 
     let startDate: Date;
+    let previousDate: Date;
+
     switch (option) {
       case InsightsOptions.DAY:
         startDate = new Date(new Date().setDate(new Date().getDate() - 1));
+        previousDate = new Date(new Date().setDate(new Date().getDate() - 2));
         break;
       case InsightsOptions.WEEK:
         startDate = new Date(new Date().setDate(new Date().getDate() - 7));
+        previousDate = new Date(new Date().setDate(new Date().getDate() - 14));
         break;
       case InsightsOptions.MONTH:
         startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
+        previousDate = new Date(new Date().setMonth(new Date().getMonth() - 2));
         break;
       case InsightsOptions.YEAR:
         startDate = new Date(
           new Date().setFullYear(new Date().getFullYear() - 1),
         );
+        previousDate = new Date(
+          new Date().setFullYear(new Date().getFullYear() - 2),
+        );
         break;
       default:
         startDate = new Date(new Date().setDate(new Date().getDate() - 1));
+        previousDate = new Date(new Date().setDate(new Date().getDate() - 2));
         break;
     }
 
@@ -129,11 +138,39 @@ export class BrandsService {
       },
     });
 
+    const payment = campaigns.reduce((acc, campaign) => {
+      return acc + campaign.payment;
+    }, 0);
+
+    const previousCampaigns = await this.prisma.campaign.findMany({
+      where: {
+        brand_id: brand.brand_id,
+        created_at: {
+          gte: previousDate,
+          lte: startDate,
+        },
+      },
+    });
+
+    const previousPayment = previousCampaigns.reduce((acc, campaign) => {
+      return acc + campaign.payment;
+    }, 0);
+
     const games = await this.prisma.game.count({
       where: {
         brand_id: brand.brand_id,
         created_at: {
           gte: startDate,
+        },
+      },
+    });
+
+    const previousGames = await this.prisma.game.count({
+      where: {
+        brand_id: brand.brand_id,
+        created_at: {
+          gte: previousDate,
+          lte: startDate,
         },
       },
     });
@@ -145,6 +182,18 @@ export class BrandsService {
         },
         created_at: {
           gte: startDate,
+        },
+      },
+    });
+
+    const previousVouchers = await this.prisma.voucher.findMany({
+      where: {
+        campaign_id: {
+          in: previousCampaigns.map((campaign) => campaign.campaign_id),
+        },
+        created_at: {
+          gte: previousDate,
+          lte: startDate,
         },
       },
     });
@@ -164,11 +213,44 @@ export class BrandsService {
       },
     });
 
+    const previousUsedVoucher = await this.prisma.userVoucher.count({
+      where: {
+        voucher_id: {
+          in: previousCampaigns.map((campaign) => campaign.campaign_id),
+        },
+        used_at: {
+          gte: previousDate,
+          lte: startDate,
+        },
+      },
+    });
+
     return {
       campaigns: campaigns.length,
       games,
       releases_voucher,
       used_voucher,
+      payment,
+      campaigns_percentage:
+        previousCampaigns.length === 0
+          ? 1
+          : (campaigns.length - previousCampaigns.length) /
+            previousCampaigns.length,
+      games_percentage:
+        previousGames === 0 ? 1 : (games - previousGames) / previousGames,
+      releases_voucher_percentage:
+        previousVouchers.length === 0
+          ? 1
+          : (releases_voucher - previousVouchers.length) /
+            previousVouchers.length,
+      used_voucher_percentage:
+        previousUsedVoucher === 0
+          ? 1
+          : (used_voucher - previousUsedVoucher) / previousUsedVoucher,
+      payment_percentage:
+        previousPayment === 0
+          ? 1
+          : (payment - previousPayment) / previousPayment,
     };
   }
 }
