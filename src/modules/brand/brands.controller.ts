@@ -6,11 +6,13 @@ import {
   Param,
   Body,
   Put,
+  Query,
 } from '@nestjs/common';
 import { BrandsService } from './brands.service';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -21,6 +23,7 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RoleType } from 'src/common/constants';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { InsightsDto, InsightsOptions } from './dto/insights.dto';
 
 @ApiTags('Brands')
 @Controller('/api/v1/brands')
@@ -43,6 +46,36 @@ export class BrandsController {
   //   return this.brandsService.createBrand(user.user_id, createBrandDto);
   // }
 
+  @Get()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all campaigns for a brand' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all campaigns for a brand',
+  })
+  async getCampaignsForBrand(@AuthUser() user: User) {
+    return this.brandsService.getCampaignsForBrand(user.user_id);
+  }
+
+  @Get('insights')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get insights for a brand' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return insights for a brand',
+  })
+  @ApiQuery({
+    name: 'option',
+    enum: InsightsOptions,
+    required: false,
+  })
+  async getInsights(
+    @AuthUser() user: User,
+    @Query('option') option?: InsightsOptions,
+  ) {
+    return this.brandsService.getInsights(user, option);
+  }
+
   @Get(':id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get brand by ID' })
@@ -53,17 +86,6 @@ export class BrandsController {
   @UseInterceptors(new TransformInterceptor('Brand retrieved successfully'))
   async getBrand(@Param('id') id: string) {
     return this.brandsService.getBrandById(id);
-  }
-
-  @Get()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all campaigns for a brand' })
-  @ApiResponse({
-    status: 200,
-    description: 'Return all campaigns for a brand',
-  })
-  async getCampaignsForBrand(@AuthUser() user: User) {
-    return this.brandsService.getCampaignsForBrand(user.user_id);
   }
 
   @Put(':id')
