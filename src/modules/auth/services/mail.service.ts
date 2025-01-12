@@ -21,4 +21,21 @@ export class MailService {
       handleError(error);
     }
   }
+
+  async sendAnnouncement(to: string, subject: string, content: string) {
+    try {
+      await this.mailerService.sendMail({
+        to,
+        from: 'Người đẹp trai nhất hành tinh',
+        subject: subject,
+        template: './announcement',
+        context: {
+          email: to,
+          content,
+        },
+      });
+    } catch (error) {
+      handleError(error);
+    }
+  }
 }

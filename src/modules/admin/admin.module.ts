@@ -5,9 +5,15 @@ import { MailService } from '@/modules/auth/services/mail.service';
 import { UsersModule } from '@/modules/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { LlmModule } from '@/modules/llm/llm.module';
+import { BullModule } from '@nestjs/bullmq';
+import {
+  DefaultQueueConsumer,
+  QueueName,
+} from '@/modules/queue/queue.consumer';
+import { BrandsService } from '@/modules/brand/brands.service';
 
 @Module({
-  providers: [AdminService, MailService],
+  providers: [AdminService, BrandsService, MailService, DefaultQueueConsumer],
   controllers: [AdminController],
   exports: [AdminService],
   imports: [
@@ -19,6 +25,9 @@ import { LlmModule } from '@/modules/llm/llm.module';
         signOptions: { expiresIn: '1h' },
         global: true,
       }),
+    }),
+    BullModule.registerQueue({
+      name: QueueName.Default,
     }),
   ],
 })

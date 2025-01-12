@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 
+export interface PromptMailResponse {
+  recipients: string[];
+  subject: string;
+  body: string;
+}
+
 @Injectable()
 export class LlmService {
   constructor(private readonly httpService: HttpService) {}

@@ -1,20 +1,30 @@
 import { PrismaService } from 'nestjs-prisma';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from '@/modules/users/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { MailService } from '@/modules/auth/services/mail.service';
 import { CreateBrandDto } from '@/modules/admin/dto/create-brand.dto';
 import { Role, Status } from '@prisma/client';
 import { PaginationDto } from './dto/pagination.dto';
-import { LlmService } from '@/modules/llm/llm.service';
+import { LlmService, PromptMailResponse } from '@/modules/llm/llm.service';
 import { PromptDto } from '@/modules/admin/dto/prompt-dto';
+import { Queue } from 'bullmq';
+import { JobName, QueueName } from '@/modules/queue/queue.consumer';
+import { InjectQueue } from '@nestjs/bullmq';
+import { SendEmailsPayload } from '@/modules/queue/payloads/send-emails.payload';
+import { BrandsService } from '@/modules/brand/brands.service';
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     private readonly mailService: MailService,
     private readonly llmService: LlmService,
     private readonly prisma: PrismaService,
+    private readonly brandsService: BrandsService,
+    @InjectQueue(QueueName.Default)
+    private readonly defaultQueue: Queue<SendEmailsPayload>,
   ) {}
 
   async createBrandAccount(dto: CreateUserDto) {
@@ -136,9 +146,28 @@ export class AdminService {
   }
 
   async processMessage(dto: PromptDto) {
+    this.logger.log('INFO: processing llm message');
     this.llmService
       .prompt(dto.message)
-      .then((response) => console.log(response));
+      .then(async (response: PromptMailResponse) => {
+        this.logger.log('INFO: done processing llm message');
+
+        const payload = response;
+
+        if (payload.recipients[0] === 'all') {
+          const brands = await this.brandsService.listAll();
+          payload['recipients'] = brands.map((brand) => brand.user.email);
+        } else {
+          const brands = await this.brandsService.listByNames(
+            response.recipients,
+          );
+          payload['recipients'] = brands.map((brand) => brand.user.email);
+        }
+
+        this.logger.log(`INFO: attempt to send job to queue with payloads`);
+        this.logger.log(payload.recipients);
+        await this.defaultQueue.add(JobName.SendEmail, response);
+      });
 
     return {
       message: 'ok',
