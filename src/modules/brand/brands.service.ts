@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Brand, User } from '@prisma/client';
@@ -10,6 +11,7 @@ import { Brand, User } from '@prisma/client';
 import { handleError } from 'src/common/utils';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { InsightsDto, InsightsOptions } from './dto/insights.dto';
 
 @Injectable()
 export class BrandsService {
@@ -113,5 +115,89 @@ export class BrandsService {
     } catch (error) {
       handleError(error);
     }
+  }
+
+  async getInsights(user: User, option: InsightsOptions) {
+    const brand = await this.prisma.brand.findFirst({
+      where: {
+        user_id: user.user_id,
+      },
+    });
+
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    let startDate: Date;
+    switch (option) {
+      case InsightsOptions.DAY:
+        startDate = new Date(new Date().setDate(new Date().getDate() - 1));
+        break;
+      case InsightsOptions.WEEK:
+        startDate = new Date(new Date().setDate(new Date().getDate() - 7));
+        break;
+      case InsightsOptions.MONTH:
+        startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
+        break;
+      case InsightsOptions.YEAR:
+        startDate = new Date(
+          new Date().setFullYear(new Date().getFullYear() - 1),
+        );
+        break;
+      default:
+        startDate = new Date(new Date().setDate(new Date().getDate() - 1));
+        break;
+    }
+
+    const campaigns = await this.prisma.campaign.findMany({
+      where: {
+        brand_id: brand.brand_id,
+        created_at: {
+          gte: startDate,
+        },
+      },
+    });
+
+    const games = await this.prisma.game.count({
+      where: {
+        brand_id: brand.brand_id,
+        created_at: {
+          gte: startDate,
+        },
+      },
+    });
+
+    const vouchers = await this.prisma.voucher.findMany({
+      where: {
+        campaign_id: {
+          in: campaigns.map((campaign) => campaign.campaign_id),
+        },
+        created_at: {
+          gte: startDate,
+        },
+      },
+    });
+
+    const releases_voucher = vouchers.reduce((acc, voucher) => {
+      return acc + voucher.quantity;
+    }, 0);
+
+    const used_voucher = await this.prisma.userVoucher.count({
+      where: {
+        voucher_id: {
+          in: campaigns.map((campaign) => campaign.campaign_id),
+        },
+        used_at: {
+          gte: startDate,
+        },
+      },
+    });
+
+    return {
+      campaigns: campaigns.length,
+      games,
+      releases_voucher,
+      used_voucher,
+    };
   }
 }
