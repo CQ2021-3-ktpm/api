@@ -147,8 +147,8 @@ model Notification {
 
 model Credit {
   credit_id    String   @id @default(cuid())
-  player_id    String
-  credits      Int
+  player_id    String   @unique
+  credits      Int      @default(0)
   credits_used Int      @default(0)
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt

@@ -6,5 +6,7 @@ export interface Question {
 
 export interface GameMetadata {
   startTime: number;
+  totalPoints: number;
+  totalPlayers: number;
   questions: Question[];
 }

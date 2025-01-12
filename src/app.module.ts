@@ -44,7 +44,7 @@ import { GameModule } from './modules/game/game.module';
     AdminModule,
     StorageModule,
     ScheduleModule.forRoot(),
-    GameModule
+    GameModule,
   ],
   controllers: [AppController],
   providers: [

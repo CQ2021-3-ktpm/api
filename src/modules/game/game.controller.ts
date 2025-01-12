@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Body, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { GameService } from './game.service';
 import { PlayGameDto } from './dto/play-game.dto';
 
@@ -16,7 +24,10 @@ export class GameController {
   }
 
   @Post(':gameId/play')
-  async playGame(@Param('gameId') gameId: string, @Body() playGameDto: PlayGameDto) {
+  async playGame(
+    @Param('gameId') gameId: string,
+    @Body() playGameDto: PlayGameDto,
+  ) {
     const result = await this.gameService.playGame(gameId, playGameDto);
     if (!result.canPlay) {
       throw new ForbiddenException(result.message);

@@ -51,8 +51,14 @@ export class AuthService {
         },
       });
 
+      await tx.credit.create({
+        data: {
+          player_id: newUser.user_id,
+        },
+      });
+
       const link = `${process.env.NEXT_PUBLIC_API_URL}/confirm-email?token=${invitation.invitation_id}`;
-      await this.mailService.sendSignInEmail(newUser.email, link);
+      // await this.mailService.sendSignInEmail(newUser.email, link);
 
       console.log(link);
 
@@ -117,6 +123,7 @@ export class AuthService {
 
     return {
       access_token: await this.jwtService.signAsync(user),
+      user_id: user.user_id,
       email: user.email,
     };
   }

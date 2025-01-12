@@ -32,7 +32,10 @@ export class GameService {
     }
 
     const correctAnswers = metadata.questions.map((q) => q.correctAnswer);
-    if (answers.length !== correctAnswers.length || !answers.every((ans, i) => ans === correctAnswers[i])) {
+    if (
+      answers.length !== correctAnswers.length ||
+      !answers.every((ans, i) => ans === correctAnswers[i])
+    ) {
       return { canPlay: false, message: 'Incorrect answer. Game over.' };
     }
 
@@ -52,6 +55,10 @@ export class GameService {
       ),
     );
 
-    return { canPlay: true, message: 'Game completed successfully', pointsEarned: pointsPerUser };
+    return {
+      canPlay: true,
+      message: 'Game completed successfully',
+      pointsEarned: pointsPerUser,
+    };
   }
 }
