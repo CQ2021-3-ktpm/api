@@ -25,7 +25,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private validUsers: Record<string, boolean> = {};
   private correctUsers: Record<string, string[]> = {};
   private totalUsers: Record<string, number> = {};
-  private endGameFlag: Record<string, boolean> = false;
+  private endGameFlag: Record<string, boolean> = {};
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
