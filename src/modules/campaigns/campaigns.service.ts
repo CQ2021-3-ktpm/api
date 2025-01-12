@@ -303,6 +303,15 @@ export class CampaignsService {
         throw new ForbiddenException('End date must be after start date');
       }
 
+      const game_amount = createCampaignDto.games.reduce((acc, game) => {
+        return acc + game.amount;
+      }, 0);
+
+      const payment =
+        game_amount * 10 +
+        10 *
+          ((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
       // Create campaign with vouchers and games in a transaction
       const campaign = await this.prisma.$transaction(async (prisma) => {
         const newCampaign = await prisma.campaign.create({
@@ -314,8 +323,27 @@ export class CampaignsService {
             end_date: endDate,
             description: createCampaignDto.description,
             category_id: createCampaignDto.category_id,
-            games: createCampaignDto.games,
+            games: createCampaignDto.games.map((game) => game.name),
+            payment: payment,
           },
+        });
+
+        const games = createCampaignDto.games.map((game) => {
+          return Array.from({ length: game.amount }, (_, index) => ({
+            brand_id: brand.brand_id,
+            campaign_id: newCampaign.campaign_id,
+            name: `${newCampaign.name} - ${game.name} - ${index + 1}`,
+            type: game.name,
+            metadata:
+              game.name === 'shake'
+                ? JSON.stringify({
+                    startTime: createCampaignDto.start_date,
+                    endTime: createCampaignDto.end_date,
+                    totalPlayers: 0,
+                  })
+                : null,
+            instructions: 'Default game instructions',
+          }));
         });
 
         // Create vouchers for the campaign
@@ -332,14 +360,7 @@ export class CampaignsService {
         // Create games for the campaign
         if (createCampaignDto.games && createCampaignDto.games.length > 0) {
           await prisma.game.createMany({
-            data: createCampaignDto.games.map((gameName) => ({
-              brand_id: brand.brand_id,
-              campaign_id: newCampaign.campaign_id,
-              name: `${newCampaign.name} - ${gameName}`,
-              type: gameName,
-              metadata: null,
-              instructions: 'Default game instructions', // You might want to make this configurable
-            })),
+            data: games.flat(),
           });
         }
 

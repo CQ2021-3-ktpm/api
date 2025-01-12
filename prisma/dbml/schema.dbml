@@ -65,6 +65,7 @@ Table Campaign {
   category_id String [not null]
   games String[] [not null]
   status Status [not null, default: 'ACTIVE']
+  payment Int [not null, default: 0]
   created_at DateTime [default: `now()`, not null]
   updated_at DateTime [not null]
   brand Brand [not null]

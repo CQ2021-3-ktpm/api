@@ -52,4 +52,15 @@ export class BrandsController {
   async getBrand(@Param('id') id: string) {
     return this.brandsService.getBrandById(id);
   }
+
+  @Get()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all campaigns for a brand' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all campaigns for a brand',
+  })
+  async getCampaignsForBrand(@AuthUser() user: User) {
+    return this.brandsService.getCampaignsForBrand(user.user_id);
+  }
 }

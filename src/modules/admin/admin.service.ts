@@ -6,7 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/auth/services/mail.service';
 import { CreateBrandDto } from '@/modules/admin/dto/create-brand.dto';
 import { Role, Status } from '@prisma/client';
-import { GetAllAccountsDto } from './dto/get-all-accounts.dto';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class AdminService {
@@ -51,8 +51,8 @@ export class AdminService {
       await this.mailService.sendSignInEmail(newUser.email, link);
 
       return {
-        access_token: await this.jwtService.signAsync(newUser),
-        email: newUser.email,
+        ...newUser,
+        id: newUser.user_id,
       };
     });
   }
@@ -99,7 +99,7 @@ export class AdminService {
     });
   }
 
-  async listAccounts(query: GetAllAccountsDto) {
+  async listAccounts(query: PaginationDto) {
     const { sort, range, filter } = query;
 
     const [offset, limit] = range ? JSON.parse(range) : [0, 10];
@@ -114,6 +114,23 @@ export class AdminService {
     return {
       accounts,
       total: accounts.length,
+    };
+  }
+
+  async listBrand(query: PaginationDto) {
+    const { sort, range, filter } = query;
+
+    const [offset, limit] = range ? JSON.parse(range) : [0, 10];
+
+    const brands = await this.prisma.brand.findMany({
+      where: { status: Status.ACTIVE },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      brands: brands,
+      total: brands.length,
     };
   }
 }

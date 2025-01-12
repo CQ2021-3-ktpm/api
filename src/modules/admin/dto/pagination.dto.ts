@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
-export class GetAllAccountsDto {
+export class PaginationDto {
   @ApiPropertyOptional({
     description: 'Sort criteria',
     example: '["title","ASC"]',
