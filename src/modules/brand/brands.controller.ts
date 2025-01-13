@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { AuthUser } from 'src/decorators';
-import { User } from '@prisma/client';
+import { User, Brand } from '@prisma/client';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RoleType } from 'src/common/constants';
@@ -53,8 +53,8 @@ export class BrandsController {
     status: 200,
     description: 'Return all campaigns for a brand',
   })
-  async getCampaignsForBrand(@AuthUser() user: User) {
-    return this.brandsService.getCampaignsForBrand(user.user_id);
+  async getCampaignsForBrand(@AuthUser() brand: Brand) {
+    return this.brandsService.getCampaignsForBrand(brand.brand_id);
   }
 
   @Get('insights')

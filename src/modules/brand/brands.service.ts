@@ -48,7 +48,7 @@ export class BrandsService {
   async getCampaignsForBrand(brand_id: string) {
     const brandWithCampaigns = await this.prisma.brand.findMany({
       where: {
-        user_id: brand_id,
+        brand_id: brand_id,
       },
       include: {
         campaigns: {
