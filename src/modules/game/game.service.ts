@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PlayGameDto } from './dto/play-game.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { GameMetadata } from '@/modules/game/dto/game-metadata.interface';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class GameService {
@@ -60,5 +61,29 @@ export class GameService {
       message: 'Game completed successfully',
       pointsEarned: pointsPerUser,
     };
+  }
+
+  async updateTurn(gameId: string, turn: number, user: User) {
+    const game = await this.getGame(gameId);
+    if (!game) {
+      return { canPlay: false, message: 'Game not found' };
+    }
+
+    return await this.prisma.credit.update({
+      where: { player_id: user.user_id },
+      data: { shake_turn: turn },
+    });
+  }
+
+  async updateCredit(gameId: string, credit: number, user: User) {
+    const game = await this.getGame(gameId);
+    if (!game) {
+      return { canPlay: false, message: 'Game not found' };
+    }
+
+    return await this.prisma.credit.update({
+      where: { player_id: user.user_id },
+      data: { credits: credit },
+    });
   }
 }
