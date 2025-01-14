@@ -48,7 +48,7 @@ export class BrandsService {
   async getCampaignsForBrand(brand_id: string) {
     const brandWithCampaigns = await this.prisma.brand.findMany({
       where: {
-        user_id: brand_id,
+        brand_id: brand_id,
       },
       include: {
         campaigns: {
@@ -63,6 +63,48 @@ export class BrandsService {
       campaigns: brandWithCampaigns[0].campaigns,
       total: brandWithCampaigns[0].campaigns.length,
     };
+  }
+
+  async getProfileBrand(brand_id: string) {
+    const brand = await this.prisma.brand.findMany({
+      where: {
+        brand_id: brand_id,
+      },
+    });
+
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    return brand[0];
+  }
+  async listAll() {
+    return this.prisma.brand.findMany({
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  async listByNames(names: string[]) {
+    return this.prisma.brand.findMany({
+      where: {
+        name: {
+          in: names,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
   }
 
   async updateBrand(

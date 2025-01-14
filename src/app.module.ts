@@ -18,6 +18,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { StorageModule } from '@/modules/storage/storage.module';
 import { GameModule } from './modules/game/game.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -45,6 +46,12 @@ import { GameModule } from './modules/game/game.module';
     StorageModule,
     ScheduleModule.forRoot(),
     GameModule,
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST ?? 'localhost',
+        port: parseInt(process.env.REDIS_PORT) ?? 6379,
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [
