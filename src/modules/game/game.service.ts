@@ -92,10 +92,6 @@ export class GameService {
       where: { player_id: user.user_id },
     });
 
-    if (userCredit.credits < credit) {
-      return { canPlay: false, message: 'Insufficient credits' };
-    }
-
     return await this.prisma.credit.update({
       where: { player_id: user.user_id },
       data: { credits: userCredit.credits + credit },
@@ -114,7 +110,7 @@ export class GameService {
 
     if (!userCredit) {
       userCredit = await this.prisma.credit.create({
-        data: { player_id: user.user_id, credits: 0, shake_turn: 10 },
+        data: { player_id: user.user_id, credits: 10, shake_turn: 10 },
       });
     }
 
