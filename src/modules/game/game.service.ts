@@ -88,9 +88,17 @@ export class GameService {
       return { canPlay: false, message: 'Game not found' };
     }
 
+    const userCredit = await this.prisma.credit.findUnique({
+      where: { player_id: user.user_id },
+    });
+
+    if (userCredit.credits < credit) {
+      return { canPlay: false, message: 'Insufficient credits' };
+    }
+
     return await this.prisma.credit.update({
       where: { player_id: user.user_id },
-      data: { credits: credit },
+      data: { credits: userCredit.credits + credit },
     });
   }
 
