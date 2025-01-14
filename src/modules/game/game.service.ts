@@ -108,8 +108,16 @@ export class GameService {
       return { canPlay: false, message: 'Game not found' };
     }
 
-    return await this.prisma.credit.findUnique({
+    let userCredit = await this.prisma.credit.findUnique({
       where: { player_id: user.user_id },
     });
+
+    if (!userCredit) {
+      userCredit = await this.prisma.credit.create({
+        data: { player_id: user.user_id, credits: 0, shake_turn: 10 },
+      });
+    }
+
+    return userCredit;
   }
 }
