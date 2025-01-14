@@ -57,6 +57,17 @@ export class BrandsController {
     return this.brandsService.getCampaignsForBrand(brand.brand_id);
   }
 
+  @Get('/profile')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get profile brand' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get profile brand',
+  })
+  async getProfileBrand(@AuthUser() brand: Brand) {
+    return this.brandsService.getProfileBrand(brand.brand_id);
+  }
+
   @Get('insights')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get insights for a brand' })

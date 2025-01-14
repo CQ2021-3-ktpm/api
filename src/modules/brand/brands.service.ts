@@ -65,6 +65,19 @@ export class BrandsService {
     };
   }
 
+  async getProfileBrand(brand_id: string) {
+    const brand = await this.prisma.brand.findMany({
+      where: {
+        brand_id: brand_id,
+      },
+    });
+
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    return brand[0];
+  }
   async listAll() {
     return this.prisma.brand.findMany({
       include: {
