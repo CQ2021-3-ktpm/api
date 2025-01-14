@@ -110,7 +110,7 @@ export class GameService {
 
     if (!userCredit) {
       userCredit = await this.prisma.credit.create({
-        data: { player_id: user.user_id, credits: 10, shake_turn: 10 },
+        data: { player_id: user.user_id, credits: 0, shake_turn: 10 },
       });
     }
 
