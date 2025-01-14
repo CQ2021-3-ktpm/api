@@ -61,6 +61,21 @@ export class GameController {
     return result;
   }
 
+  @Get(':gameId/user-credit')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the credit of a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the credit of a user',
+  })
+  async getUserCredit(@AuthUser() user: User, @Param('gameId') gameId: string) {
+    const result = await this.gameService.getUserCredit(user, gameId);
+    if (!result) {
+      throw new ForbiddenException('Game not found');
+    }
+    return result;
+  }
+
   @Get(':gameId')
   async getGame(@Param('gameId') gameId: string) {
     const game = await this.gameService.getGame(gameId);

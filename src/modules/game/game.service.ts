@@ -86,4 +86,15 @@ export class GameService {
       data: { credits: credit },
     });
   }
+
+  async getUserCredit(user: User, gameId: string) {
+    const game = await this.getGame(gameId);
+    if (!game) {
+      return { canPlay: false, message: 'Game not found' };
+    }
+
+    return await this.prisma.credit.findUnique({
+      where: { player_id: user.user_id },
+    });
+  }
 }
