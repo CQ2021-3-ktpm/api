@@ -69,9 +69,16 @@ export class GameService {
       return { canPlay: false, message: 'Game not found' };
     }
 
+    const userCredit = await this.prisma.credit.findUnique({
+      where: { player_id: user.user_id },
+    });
+
     return await this.prisma.credit.update({
       where: { player_id: user.user_id },
-      data: { shake_turn: turn },
+      data: {
+        shake_turn:
+          turn < 0 ? userCredit.shake_turn - 1 : userCredit.shake_turn,
+      },
     });
   }
 
@@ -81,9 +88,13 @@ export class GameService {
       return { canPlay: false, message: 'Game not found' };
     }
 
+    const userCredit = await this.prisma.credit.findUnique({
+      where: { player_id: user.user_id },
+    });
+
     return await this.prisma.credit.update({
       where: { player_id: user.user_id },
-      data: { credits: credit },
+      data: { credits: userCredit.credits + credit },
     });
   }
 
@@ -93,8 +104,16 @@ export class GameService {
       return { canPlay: false, message: 'Game not found' };
     }
 
-    return await this.prisma.credit.findUnique({
+    let userCredit = await this.prisma.credit.findUnique({
       where: { player_id: user.user_id },
     });
+
+    if (!userCredit) {
+      userCredit = await this.prisma.credit.create({
+        data: { player_id: user.user_id, credits: 10, shake_turn: 10 },
+      });
+    }
+
+    return userCredit;
   }
 }
