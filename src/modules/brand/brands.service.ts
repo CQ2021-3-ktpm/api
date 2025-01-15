@@ -15,7 +15,9 @@ import { InsightsDto, InsightsOptions } from './dto/insights.dto';
 
 @Injectable()
 export class BrandsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+  ) { }
 
   async createBrand(
     userId: string,
@@ -45,39 +47,52 @@ export class BrandsService {
     return brand;
   }
 
-  async getCampaignsForBrand(brand_id: string) {
-    const brandWithCampaigns = await this.prisma.brand.findMany({
-      where: {
-        brand_id: brand_id,
-      },
-      include: {
-        campaigns: {
-          where: {
-            brand_id: brand_id,
-          },
-        },
-      },
-    });
+  async getBrandIdForUser(user_id: string) {
+    try {
+      const brand = await this.prisma.brand.findFirst({
+        where: { user_id },
+      });
 
-    return {
-      campaigns: brandWithCampaigns[0].campaigns,
-      total: brandWithCampaigns[0].campaigns.length,
-    };
-  }
+      if (!brand) {
+        throw new Error('Brand not found for this user');
+      }
 
-  async getProfileBrand(brand_id: string) {
-    const brand = await this.prisma.brand.findMany({
-      where: {
-        brand_id: brand_id,
-      },
-    });
-
-    if (!brand) {
-      throw new NotFoundException('Brand not found');
+      return brand.brand_id;
+    } catch (error) {
+      console.error('Error fetching brand for user:', error);
+      throw error;
     }
-
-    return brand[0];
   }
+
+  async getCampaignsForBrand(user_id: string) {
+    try {
+      const brand_id = await this.getBrandIdForUser(user_id);
+      const campaigns = await this.prisma.campaign.findMany({
+        where: { brand_id },
+      });
+
+      return {
+        campaigns,
+        total: campaigns.length,
+      };
+    } catch (error) {
+      console.error('Error fetching campaigns for brand:', error);
+      throw error;
+    }
+  }
+
+
+  async getProfileBrand(user_id: string) {
+    try {
+      const brand_id = await this.getBrandIdForUser(user_id);
+      const brand = await this.getBrandById(brand_id);
+      return brand;
+    } catch (error) {
+      console.error('Error fetching profile for brand:', error);
+      throw error;
+    }
+  }
+
   async listAll() {
     return this.prisma.brand.findMany({
       include: {
@@ -214,3 +229,7 @@ export class BrandsService {
     };
   }
 }
+function getBrandIdByUserId(user_id: string) {
+  throw new Error('Function not implemented.');
+}
+

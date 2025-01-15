@@ -53,8 +53,8 @@ export class BrandsController {
     status: 200,
     description: 'Return all campaigns for a brand',
   })
-  async getCampaignsForBrand(@AuthUser() brand: Brand) {
-    return this.brandsService.getCampaignsForBrand(brand.brand_id);
+  async getCampaignsForBrand(@AuthUser() user: User) {
+    return this.brandsService.getCampaignsForBrand(user.user_id);
   }
 
   @Get('/profile')
@@ -64,8 +64,8 @@ export class BrandsController {
     status: 200,
     description: 'Get profile brand',
   })
-  async getProfileBrand(@AuthUser() brand: Brand) {
-    return this.brandsService.getProfileBrand(brand.brand_id);
+  async getProfileBrand(@AuthUser() user: User) {
+    return this.brandsService.getProfileBrand(user.user_id);
   }
 
   @Get('insights')
