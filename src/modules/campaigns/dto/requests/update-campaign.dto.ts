@@ -12,7 +12,6 @@ import {
 
 class UpdateVoucherDto {
   @ApiProperty()
-  @IsUUID()
   voucher_id: string;
 
   @ApiProperty()
