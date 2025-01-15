@@ -11,13 +11,18 @@ import {
 } from '@nestjs/common';
 import { GameService } from './game.service';
 import { AuthGuard } from '@nestjs/passport';
-import { PlayGameDto } from './dto/play-game.dto';
 import { AuthUser } from 'src/decorators/auth-user.decorator';
 import { User } from '@prisma/client';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateGameDto } from '@/modules/game/dto/create-game.dto';
 @Controller('game')
 export class GameController {
   constructor(private readonly gameService: GameService) {}
+
+  @Post()
+  async createGame(@Body() createGameDto: CreateGameDto) {
+    return this.gameService.createGame(createGameDto);
+  }
 
   @Patch(':gameId/update-turn')
   @ApiBearerAuth()
@@ -83,17 +88,5 @@ export class GameController {
       throw new NotFoundException('Game not found');
     }
     return game;
-  }
-
-  @Post(':gameId/play')
-  async playGame(
-    @Param('gameId') gameId: string,
-    @Body() playGameDto: PlayGameDto,
-  ) {
-    const result = await this.gameService.playGame(gameId, playGameDto);
-    if (!result.canPlay) {
-      throw new ForbiddenException(result.message);
-    }
-    return result;
   }
 }
