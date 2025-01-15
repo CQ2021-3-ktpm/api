@@ -118,4 +118,26 @@ export class GameService {
     });
   }
 
+  async updateMetadataForGame(gameId: string, newStartTime: number) {
+    const game = await this.prisma.game.findUnique({ where: { game_id: gameId } });
+    
+    if (!game) {
+      throw new Error('Game not found');
+    }
+  
+    const existingMetadata = game.metadata || {
+      startTime: parseInt(Date.now().toString()),  
+      totalPlayers: 0,
+      totalPoints: 1000,
+      questions: []
+    };
+  
+    const updatedMetadata: GameMetadata = {
+      ... JSON.parse(JSON.stringify(existingMetadata)),
+      startTime: newStartTime, 
+    };
+  
+    return this.updateQuestionForGame(gameId, updatedMetadata);
+  }
+  
 }

@@ -121,4 +121,22 @@ export class GameController {
     }
     return result;
   }
+
+  @Patch(':gameId/update-start-time')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update the start time of a game' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the updated game',
+  })
+  async updateMetadataForGame(
+    @Param('gameId') gameId: string,
+    @Body() body: { startTime: number },
+  ) {
+    const result = await this.gameService.updateMetadataForGame(gameId, body.startTime);
+    if (!result) {
+      throw new ForbiddenException('Game not found');
+    }
+    return result;
+  }
 }
