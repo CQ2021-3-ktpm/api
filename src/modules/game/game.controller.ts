@@ -15,11 +15,14 @@ import { AuthUser } from 'src/decorators/auth-user.decorator';
 import { User } from '@prisma/client';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateGameDto } from '@/modules/game/dto/create-game.dto';
+import { addQuestion, Question } from '@/modules/game/dto/game-metadata.interface';
+
 @Controller('game')
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Post()
+  @ApiBearerAuth()
   async createGame(@Body() createGameDto: CreateGameDto) {
     return this.gameService.createGame(createGameDto);
   }
@@ -82,11 +85,40 @@ export class GameController {
   }
 
   @Get(':gameId')
+  @ApiBearerAuth()
   async getGame(@Param('gameId') gameId: string) {
     const game = await this.gameService.getGame(gameId);
     if (!game) {
       throw new NotFoundException('Game not found');
     }
     return game;
+  }
+
+  @Get(':campaignId/games')
+  @ApiBearerAuth()
+  async getGameByCampaignId(@Param('campaignId') campaignId: string) {
+    const campaign = await this.gameService.getGameByCampaignId(campaignId);
+    if (!campaign) {
+      throw new NotFoundException('Campaign not found');
+    }
+    return campaign;
+  }
+
+  @Patch(':gameId/add-question')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add questions to a game' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the updated game',
+  })
+  async addQuestionsToGame(
+    @Param('gameId') gameId: string,
+    @Body() question: addQuestion,
+  ) {
+    const result = await this.gameService.addQuestionsToGame(gameId, question);
+    if (!result) {
+      throw new ForbiddenException('Game not found');
+    }
+    return result;
   }
 }

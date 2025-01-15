@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PlayGameDto } from './dto/play-game.dto';
 import { PrismaService } from 'nestjs-prisma';
-import { GameMetadata } from '@/modules/game/dto/game-metadata.interface';
+import { GameMetadata, Question } from '@/modules/game/dto/game-metadata.interface';
 import { User } from '@prisma/client';
 import { CreateGameDto } from '@/modules/game/dto/create-game.dto';
 
@@ -17,7 +16,7 @@ export class GameService {
 
   async createGame(createGameDto: CreateGameDto) {
     if (createGameDto.type === 'quiz') {
-      createGameDto.metadata.totalPoints = 1000
+      createGameDto.metadata.totalPoints = 1000;
     }
 
     return this.prisma.game.create({
@@ -37,7 +36,7 @@ export class GameService {
       where: { player_id: user.user_id },
     });
 
-    return await this.prisma.credit.update({
+    return this.prisma.credit.update({
       where: { player_id: user.user_id },
       data: {
         shake_turn:
@@ -56,7 +55,7 @@ export class GameService {
       where: { player_id: user.user_id },
     });
 
-    return await this.prisma.credit.update({
+    return this.prisma.credit.update({
       where: { player_id: user.user_id },
       data: { credits: userCredit.credits + credit },
     });
@@ -80,4 +79,42 @@ export class GameService {
 
     return userCredit;
   }
+
+  async updateQuestionForGame(gameId: string, metadata: GameMetadata) {
+    return this.prisma.game.update({
+      where: { game_id: gameId },
+      data: { metadata: JSON.parse(JSON.stringify(metadata)) },
+    });
+  }
+
+  async addQuestionsToGame(gameId: string, newQuestions: Question) {
+    const game = await this.prisma.game.findUnique({ where: { game_id: gameId } });
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const existingMetadata = game.metadata || {
+      startTime: parseInt(Date.now().toString()),
+      totalPlayers: 0,
+      totalPoints: 1000,
+      questions: []
+    };
+
+    const updatedMetadata: GameMetadata = {
+      ... JSON.parse(JSON.stringify(existingMetadata)),
+      questions: [... JSON.parse(JSON.stringify(existingMetadata)).questions, newQuestions],
+    };
+
+    return this.updateQuestionForGame(gameId, updatedMetadata);
+  }
+
+  async getGameByCampaignId(campaignId: string) {
+    return this.prisma.game.findMany({
+      where: { 
+        campaign_id: campaignId,
+        type: 'quiz', 
+      },
+    });
+  }
+
 }
