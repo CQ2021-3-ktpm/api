@@ -16,7 +16,8 @@ export class GameService {
 
   async createGame(createGameDto: CreateGameDto) {
     if (createGameDto.type === 'quiz') {
-      createGameDto.metadata.totalPoints = 1000;
+      createGameDto.metadata.totalPoints = 1000
+      createGameDto.metadata.totalPlayers = 0
     }
 
     return this.prisma.game.create({
